@@ -7,12 +7,15 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddRadzenComponents();
 
 // Add device-specific services used by the MauiHybridAuth.Shared project
 builder.Services.AddSingleton<IFormFactor, FormFactor>();

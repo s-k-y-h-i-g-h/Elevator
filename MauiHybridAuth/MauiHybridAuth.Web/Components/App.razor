@@ -9,12 +9,14 @@
     <link rel="stylesheet" href="_content/MauiHybridAuth.Shared/app.css" />
     <link rel="stylesheet" href="MauiHybridAuth.Web.styles.css" />
     <link rel="icon" type="image/png" href="_content/MauiHybridAuth.Shared/favicon.png" />
+    <RadzenTheme Theme="material" @rendermode="PageRenderMode" />
     <HeadOutlet @rendermode="PageRenderMode" />
 </head>
 
 <body>
     <Routes @rendermode="PageRenderMode" />
     <script src="_framework/blazor.web.js"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
 </body>
 
 </html>
