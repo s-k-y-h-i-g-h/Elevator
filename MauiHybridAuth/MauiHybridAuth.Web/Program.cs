@@ -20,6 +20,7 @@ builder.Services.AddRadzenComponents();
 // Add device-specific services used by the MauiHybridAuth.Shared project
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
+builder.Services.AddScoped<IInterventionService, EfInterventionService>();
 
 // Add Auth services used by the Web app
 builder.Services.AddAuthentication(options =>
@@ -44,6 +45,9 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>(options => options.Sig
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+// Register data seeder service
+builder.Services.AddScoped<DataSeeder>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -58,6 +62,10 @@ if (app.Environment.IsDevelopment())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.Migrate();
+        
+        // Seed test data
+        var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+        await dataSeeder.SeedDataAsync();
     }
     app.UseMigrationsEndPoint();
     app.UseSwagger();
