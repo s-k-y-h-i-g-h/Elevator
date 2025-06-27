@@ -1,0 +1,61 @@
+@page "/interventions"
+@using Microsoft.AspNetCore.Authorization
+@using MauiHybridAuth.Shared.Services
+@using MauiHybridAuth.Shared.Models
+@inject IInterventionService InterventionService
+
+<PageTitle>Interventions</PageTitle>
+
+<h1>Interventions</h1>
+
+<p>This component demonstrates showing intervention data.</p>
+
+@if (interventions == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <RadzenDataGrid Data="@interventions" TItem="Intervention" AllowPaging="true" PageSize="10" AllowSorting="true"
+        AllowFiltering="true" ShowPagingSummary="true">
+        <Columns>
+            <RadzenDataGridColumn TItem="Intervention" Property="Name" Title="Name" Width="200px" />
+            <RadzenDataGridColumn TItem="Intervention" Property="Description" Title="Description" Width="300px" />
+            <RadzenDataGridColumn TItem="Intervention" Title="Categories" Width="250px">
+                <Template Context="intervention">
+                    @GetCategoriesString(intervention)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Intervention" Title="Average Rating" Width="150px">
+                <Template Context="intervention">
+                    @intervention.CalculateAverageRating().ToString("F1")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Intervention" Title="Total Ratings" Width="150px">
+                <Template Context="intervention">
+                    @intervention.InterventionRatings.Count
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    private List<Intervention>? interventions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        interventions = await InterventionService.GetAllAsync();
+    }
+
+    private string GetCategoriesString(Intervention intervention)
+    {
+        var categories = intervention.GetCategories()
+        .Where(c => c.ParentCategoryId.HasValue) // Only subcategories
+        .Select(c => c.Name)
+        .OrderBy(name => name)
+        .ToList();
+
+        return categories.Any() ? string.Join(", ", categories) : "None";
+    }
+}

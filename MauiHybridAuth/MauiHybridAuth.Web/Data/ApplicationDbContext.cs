@@ -9,6 +9,8 @@ namespace MauiHybridAuth.Web.Data
         public DbSet<Compound> Compounds { get; set; }
         public DbSet<Intervention> Interventions { get; set; }
         public DbSet<InterventionRating> InterventionRatings { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<InterventionCategory> InterventionCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +40,34 @@ namespace MauiHybridAuth.Web.Data
                 .WithMany()
                 .HasForeignKey(ir => ir.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure Category self-referencing relationship for subcategories
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                
+                entity.HasOne(e => e.ParentCategory)
+                    .WithMany(e => e.Subcategories)
+                    .HasForeignKey(e => e.ParentCategoryId)
+                    .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete of parent categories
+            });
+
+            // Configure InterventionCategory many-to-many relationship
+            modelBuilder.Entity<InterventionCategory>(entity =>
+            {
+                entity.HasKey(ic => new { ic.InterventionId, ic.CategoryId });
+                
+                entity.HasOne(ic => ic.Intervention)
+                    .WithMany(i => i.InterventionCategories)
+                    .HasForeignKey(ic => ic.InterventionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(ic => ic.Category)
+                    .WithMany(c => c.InterventionCategories)
+                    .HasForeignKey(ic => ic.CategoryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

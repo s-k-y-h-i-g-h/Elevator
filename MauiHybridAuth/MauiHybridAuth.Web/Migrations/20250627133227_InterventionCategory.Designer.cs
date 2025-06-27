@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MauiHybridAuth.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250625091306_Initial")]
-    partial class Initial
+    [Migration("20250627133227_InterventionCategory")]
+    partial class InterventionCategory
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,16 +25,32 @@ namespace MauiHybridAuth.Web.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.HasSequence("InterventionSequence");
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("ParentCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.ToTable("Categories");
+                });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Intervention", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("NEXT VALUE FOR [InterventionSequence]");
-
-                    SqlServerPropertyBuilderExtensions.UseSequence(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -51,20 +67,33 @@ namespace MauiHybridAuth.Web.Migrations
                     b.UseTpcMappingStrategy();
                 });
 
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.InterventionCategory", b =>
+                {
+                    b.Property<Guid>("InterventionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("InterventionId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("InterventionCategories");
+                });
+
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.InterventionRating", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("InterventionId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("InterventionId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Rating")
                         .HasColumnType("int");
@@ -283,6 +312,35 @@ namespace MauiHybridAuth.Web.Migrations
                     b.ToTable("Compound", (string)null);
                 });
 
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Category", "ParentCategory")
+                        .WithMany("Subcategories")
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentCategory");
+                });
+
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.InterventionCategory", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Category", "Category")
+                        .WithMany("InterventionCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MauiHybridAuth.Shared.Models.Intervention", "Intervention")
+                        .WithMany("InterventionCategories")
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Intervention");
+                });
+
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.InterventionRating", b =>
                 {
                     b.HasOne("MauiHybridAuth.Web.Data.ApplicationUser", null)
@@ -351,8 +409,17 @@ namespace MauiHybridAuth.Web.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
+                {
+                    b.Navigation("InterventionCategories");
+
+                    b.Navigation("Subcategories");
+                });
+
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Intervention", b =>
                 {
+                    b.Navigation("InterventionCategories");
+
                     b.Navigation("InterventionRatings");
                 });
 #pragma warning restore 612, 618

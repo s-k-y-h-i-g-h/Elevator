@@ -14,6 +14,8 @@ public class EfInterventionService : IInterventionService
     {
         return await _db.Interventions
             .Include(i => i.InterventionRatings)
+            .Include(i => i.InterventionCategories)
+                .ThenInclude(ic => ic.Category)
             .ToListAsync();
     }
 }
