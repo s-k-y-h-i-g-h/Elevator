@@ -3,49 +3,173 @@
 @using MauiHybridAuth.Shared.Services
 @using MauiHybridAuth.Shared.Models
 @inject IInterventionService InterventionService
+@inject ICategoryService CategoryService
 
 <PageTitle>Interventions</PageTitle>
 
-<h1>Interventions</h1>
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5>Categories</h5>
+            </div>
+            <div class="card-body">
+                @if (categories == null)
+                {
+                    <p><em>Loading categories...</em></p>
+                }
+                else
+                {
+                    @foreach (var category in categories)
+                    {
+                        <div class="mb-3">
+                            <RadzenCheckBox Value="@GetCategoryCheckedState(category.Id)"
+                                Change="@((bool value) => OnCategoryChanged(category.Id, value))" />
+                            <span class="ms-2 fw-bold">@category.Name</span>
 
-<p>This component demonstrates showing intervention data.</p>
+                            @if (category.Subcategories.Any())
+                            {
+                                <div class="ms-4 mt-2">
+                                    @foreach (var subcategory in category.Subcategories)
+                                    {
+                                        <div class="mb-1">
+                                            <RadzenCheckBox Value="@GetSubcategoryCheckedState(subcategory.Id)"
+                                                Change="@((bool value) => OnSubcategoryChanged(subcategory.Id, value))" />
+                                            <span class="ms-2">@subcategory.Name</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
 
-@if (interventions == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <RadzenDataGrid Data="@interventions" TItem="Intervention" AllowPaging="true" PageSize="10" AllowSorting="true"
-        AllowFiltering="true" ShowPagingSummary="true">
-        <Columns>
-            <RadzenDataGridColumn TItem="Intervention" Property="Name" Title="Name" Width="200px" />
-            <RadzenDataGridColumn TItem="Intervention" Property="Description" Title="Description" Width="300px" />
-            <RadzenDataGridColumn TItem="Intervention" Title="Categories" Width="250px">
-                <Template Context="intervention">
-                    @GetCategoriesString(intervention)
-                </Template>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Intervention" Title="Average Rating" Width="150px">
-                <Template Context="intervention">
-                    @intervention.CalculateAverageRating().ToString("F1")
-                </Template>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Intervention" Title="Total Ratings" Width="150px">
-                <Template Context="intervention">
-                    @intervention.InterventionRatings.Count
-                </Template>
-            </RadzenDataGridColumn>
-        </Columns>
-    </RadzenDataGrid>
-}
+    <!-- Main Content -->
+    <div class="col-md-9">
+        <h1>Interventions</h1>
+
+        <p>This component demonstrates showing intervention data.</p>
+
+        @if (interventions == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <RadzenDataGrid Data="@FilteredInterventions" TItem="Intervention" AllowPaging="true" PageSize="10"
+                AllowSorting="true" AllowFiltering="true" ShowPagingSummary="true">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Intervention" Property="Name" Title="Name" Width="200px" />
+                    <RadzenDataGridColumn TItem="Intervention" Property="Description" Title="Description" Width="300px" />
+                    <RadzenDataGridColumn TItem="Intervention" Title="Categories" Width="250px">
+                        <Template Context="intervention">
+                            @GetCategoriesString(intervention)
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Intervention" Title="Average Rating" Width="150px">
+                        <Template Context="intervention">
+                            @intervention.CalculateAverageRating().ToString("F1")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Intervention" Title="Total Ratings" Width="150px">
+                        <Template Context="intervention">
+                            @intervention.InterventionRatings.Count
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </div>
+</div>
 
 @code {
     private List<Intervention>? interventions;
+    private List<Category>? categories;
+    private HashSet<Guid> selectedCategoryIds = new();
+    private HashSet<Guid> selectedSubcategoryIds = new();
 
     protected override async Task OnInitializedAsync()
     {
+        // Load interventions and categories sequentially to avoid DbContext concurrency issues
         interventions = await InterventionService.GetAllAsync();
+        categories = await CategoryService.GetMainCategoriesWithSubcategoriesAsync();
+    }
+
+    private IEnumerable<Intervention> FilteredInterventions
+    {
+        get
+        {
+            if (interventions == null) return Enumerable.Empty<Intervention>();
+
+            var selectedIds = selectedCategoryIds.Union(selectedSubcategoryIds).ToHashSet();
+
+            if (!selectedIds.Any())
+                return interventions;
+
+            return interventions.Where(intervention =>
+            intervention.InterventionCategories.Any(ic => selectedIds.Contains(ic.CategoryId))
+            );
+        }
+    }
+
+    private bool GetCategoryCheckedState(Guid categoryId)
+    {
+        return selectedCategoryIds.Contains(categoryId);
+    }
+
+    private bool GetSubcategoryCheckedState(Guid subcategoryId)
+    {
+        return selectedSubcategoryIds.Contains(subcategoryId);
+    }
+
+    private void OnCategoryChanged(Guid categoryId, bool value)
+    {
+        if (value)
+        {
+            selectedCategoryIds.Add(categoryId);
+            // Also add all subcategories of this category
+            var category = categories?.FirstOrDefault(c => c.Id == categoryId);
+            if (category != null)
+            {
+                foreach (var subcategory in category.Subcategories)
+                {
+                    selectedSubcategoryIds.Add(subcategory.Id);
+                }
+            }
+        }
+        else
+        {
+            selectedCategoryIds.Remove(categoryId);
+            // Also remove all subcategories of this category
+            var category = categories?.FirstOrDefault(c => c.Id == categoryId);
+            if (category != null)
+            {
+                foreach (var subcategory in category.Subcategories)
+                {
+                    selectedSubcategoryIds.Remove(subcategory.Id);
+                }
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private void OnSubcategoryChanged(Guid subcategoryId, bool value)
+    {
+        if (value)
+        {
+            selectedSubcategoryIds.Add(subcategoryId);
+        }
+        else
+        {
+            selectedSubcategoryIds.Remove(subcategoryId);
+        }
+
+        StateHasChanged();
     }
 
     private string GetCategoriesString(Intervention intervention)

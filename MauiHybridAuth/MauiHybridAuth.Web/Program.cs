@@ -21,6 +21,7 @@ builder.Services.AddRadzenComponents();
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddScoped<IInterventionService, EfInterventionService>();
+builder.Services.AddScoped<ICategoryService, EfCategoryService>();
 
 // Add Auth services used by the Web app
 builder.Services.AddAuthentication(options =>
