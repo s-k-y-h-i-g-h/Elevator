@@ -1,6 +1,6 @@
 namespace MauiHybridAuth.Shared.Models;
 
-public class Compound : Intervention
+public class Compound : Substance
 {
 
 }

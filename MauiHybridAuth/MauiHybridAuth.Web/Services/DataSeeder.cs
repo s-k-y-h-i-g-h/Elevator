@@ -161,11 +161,12 @@ public class DataSeeder
 
     private async Task<List<Compound>> SeedCompoundsAsync()
     {
+        var random = new Random();
         var compounds = new List<Compound>
         {
             new Compound { Name = "Aspirin", Description = "Common pain reliever and anti-inflammatory medication" },
-            new Compound { Name = "Ibuprofen", Description = "Nonsteroidal anti-inflammatory drug (NSAID)" },
-            new Compound { Name = "Acetaminophen", Description = "Pain reliever and fever reducer" },
+            new Compound { Name = "Piracetam", Description = "Nootropic drug that improves memory and cognitive function" },
+            new Compound { Name = "L-Carnosine", Description = "Antioxidant that protects against oxidative stress" },
             new Compound { Name = "Lisinopril", Description = "ACE inhibitor used to treat high blood pressure" },
             new Compound { Name = "Metformin", Description = "Oral diabetes medicine that helps control blood sugar" },
             new Compound { Name = "Atorvastatin", Description = "Statin medication used to lower cholesterol" },
@@ -175,6 +176,9 @@ public class DataSeeder
             new Compound { Name = "Sertraline", Description = "Selective serotonin reuptake inhibitor (SSRI)" }
         };
 
+        // Get all available classification tags
+        var allTags = Enum.GetValues<ClassificationTag>().ToList();
+
         foreach (var compound in compounds)
         {
             var existingCompound = await _context.Compounds
@@ -182,8 +186,23 @@ public class DataSeeder
             
             if (existingCompound == null)
             {
+                // Generate random dose range in "X-XXXmg" format
+                var minDose = random.Next(5, 51); // 5-50mg
+                var maxDose = random.Next(minDose + 10, minDose + 101); // 10-100mg more than min
+                compound.DoseRange = $"{minDose}-{maxDose}mg";
+                
+                // Generate random duration between 60-240 minutes
+                compound.DurationInMinutes = random.Next(60, 241);
+                
+                // Assign 0-3 random classification tags
+                var numTags = random.Next(0, 4); // 0, 1, 2, or 3 tags
+                var selectedTags = allTags.OrderBy(x => random.Next()).Take(numTags).ToList();
+                compound.ClassificationTags = selectedTags;
+                
                 _context.Compounds.Add(compound);
-                _logger.LogInformation("Added compound: {Name}", compound.Name);
+                _logger.LogInformation("Added compound: {Name} with dose range {DoseRange}, duration {Duration} minutes, and tags: {Tags}", 
+                    compound.Name, compound.DoseRange, compound.DurationInMinutes, 
+                    selectedTags.Any() ? string.Join(", ", selectedTags) : "None");
             }
         }
 
@@ -202,7 +221,7 @@ public class DataSeeder
         foreach (var compound in compounds)
         {
             // Assign 1-5 random subcategories to each compound
-            var numCategories = random.Next(1, 6);
+            var numCategories = random.Next(1, 3);
             var selectedCategories = subcategories.OrderBy(x => random.Next()).Take(numCategories).ToList();
 
             foreach (var category in selectedCategories)

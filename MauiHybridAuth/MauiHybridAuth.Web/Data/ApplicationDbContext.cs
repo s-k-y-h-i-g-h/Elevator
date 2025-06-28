@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MauiHybridAuth.Shared.Models;
 
 namespace MauiHybridAuth.Web.Data
@@ -18,6 +19,11 @@ namespace MauiHybridAuth.Web.Data
 
             // Configure TPC inheritance for Intervention hierarchy
             modelBuilder.Entity<Intervention>(entity =>
+            {
+                entity.UseTpcMappingStrategy();
+            });
+
+            modelBuilder.Entity<Substance>(entity =>
             {
                 entity.UseTpcMappingStrategy();
             });
@@ -67,6 +73,23 @@ namespace MauiHybridAuth.Web.Data
                     .WithMany(c => c.InterventionCategories)
                     .HasForeignKey(ic => ic.CategoryId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Substance ClassificationTags enum collection
+            modelBuilder.Entity<Substance>(entity =>
+            {
+                entity.Property(e => e.ClassificationTags)
+                    .HasConversion(
+                        v => string.Join(',', v.Select(tag => tag.ToString())),
+                        v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                              .Select(tag => (ClassificationTag)Enum.Parse(typeof(ClassificationTag), tag))
+                              .ToList()
+                    )
+                    .HasColumnType("nvarchar(max)")
+                    .Metadata.SetValueComparer(new ValueComparer<ICollection<ClassificationTag>>(
+                        (c1, c2) => c1.SequenceEqual(c2),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()));
             });
         }
     }
