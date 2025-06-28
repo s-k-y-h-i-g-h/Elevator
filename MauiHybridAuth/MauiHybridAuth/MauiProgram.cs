@@ -2,6 +2,7 @@ using MauiHybridAuth.Services;
 using MauiHybridAuth.Shared.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
+using Radzen;
 
 namespace MauiHybridAuth
 {
@@ -23,6 +24,9 @@ namespace MauiHybridAuth
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
+
+            // Add Radzen services
+            builder.Services.AddRadzenComponents();
 
             //Register needed elements for authentication:
             // This is the core functionality

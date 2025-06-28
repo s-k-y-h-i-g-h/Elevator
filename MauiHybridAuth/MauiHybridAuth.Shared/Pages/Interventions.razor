@@ -52,15 +52,13 @@
     <div class="col-md-9">
         <h1>Interventions</h1>
 
-        <p>This component demonstrates showing intervention data.</p>
-
         @if (interventions == null)
         {
             <p><em>Loading...</em></p>
         }
         else
         {
-            <RadzenDataGrid Data="@FilteredInterventions" TItem="Intervention" AllowPaging="true" PageSize="10"
+            <RadzenDataGrid Data="@FilteredInterventions" TItem="Intervention" AllowPaging="true" PageSize="25"
                 AllowSorting="true" AllowFiltering="true" ShowPagingSummary="true">
                 <Columns>
                     <RadzenDataGridColumn TItem="Intervention" Property="Name" Title="Name" Width="200px" />

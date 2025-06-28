@@ -1,18 +1,55 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<div class="layout-container">
+    <header class="layout-header">
+        <RadzenRow Class="align-items-center">
+            <RadzenColumn Size="12">
+                <div class="d-flex align-items-center">
+                    <RadzenButton Text="Home" Icon="home" NavigateUrl="" ButtonStyle="ButtonStyle.Light" />
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+                    <AuthorizeView>
+                        <NotAuthorized>
+                            <RadzenButton Text="Register" Icon="person_add" NavigateUrl="Account/Register"
+                                ButtonStyle="ButtonStyle.Light" />
+                            <RadzenButton Text="Login" Icon="login" NavigateUrl="Account/Login"
+                                ButtonStyle="ButtonStyle.Light" />
+                            <RadzenButton Text="Counter" Icon="add" NavigateUrl="counter"
+                                ButtonStyle="ButtonStyle.Light" />
+                            <RadzenButton Text="Weather" Icon="cloud" NavigateUrl="weather"
+                                ButtonStyle="ButtonStyle.Light" />
+                            <RadzenButton Text="Interventions" Icon="medical_services" NavigateUrl="interventions"
+                                ButtonStyle="ButtonStyle.Light" />
+                        </NotAuthorized>
+                        <Authorized>
+                            <RadzenButton Text="Home" Icon="home" NavigateUrl="" ButtonStyle="ButtonStyle.Light" />
+                            <RadzenButton Text="Counter" Icon="add" NavigateUrl="counter"
+                                ButtonStyle="ButtonStyle.Light" />
+                            <RadzenButton Text="Weather" Icon="cloud" NavigateUrl="weather"
+                                ButtonStyle="ButtonStyle.Light" />
+                            <RadzenButton Text="Interventions" Icon="medical_services" NavigateUrl="interventions"
+                                ButtonStyle="ButtonStyle.Light" />
 
-        <article class="content px-4">
+                            <RadzenButton Text="@context.User.Identity?.Name" Icon="person" NavigateUrl="Account/Manage"
+                                ButtonStyle="ButtonStyle.Light" />
+
+                            <form action="Account/Logout" method="post" style="display: inline;">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                <RadzenButton ButtonStyle="ButtonStyle.Light" ButtonType="ButtonType.Submit"
+                                    Icon="logout" Text="Logout" />
+                            </form>
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
+            </RadzenColumn>
+        </RadzenRow>
+    </header>
+
+    <main class="layout-main">
+        <RadzenContainer>
             @Body
-        </article>
+        </RadzenContainer>
     </main>
 </div>
 
@@ -21,3 +58,24 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
