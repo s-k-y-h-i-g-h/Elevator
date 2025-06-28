@@ -34,6 +34,36 @@ namespace MauiHybridAuth.Web.Data
                 entity.UseTpcMappingStrategy();
             });
 
+            modelBuilder.Entity<Augmentation>(entity =>
+            {
+                entity.ToTable("Augmentation");
+                entity.UseTpcMappingStrategy();
+            });
+
+            modelBuilder.Entity<Behavioral>(entity =>
+            {
+                entity.ToTable("Behavioral");
+                entity.UseTpcMappingStrategy();
+            });
+
+            modelBuilder.Entity<Dietary>(entity =>
+            {
+                entity.ToTable("Dietary");
+                entity.UseTpcMappingStrategy();
+            });
+
+            modelBuilder.Entity<Physiological>(entity =>
+            {
+                entity.ToTable("Physiological");
+                entity.UseTpcMappingStrategy();
+            });
+
+            modelBuilder.Entity<Wearable>(entity =>
+            {
+                entity.ToTable("Wearable");
+                entity.UseTpcMappingStrategy();
+            });
+
             // Configure InterventionRating relationships
             modelBuilder.Entity<InterventionRating>()
                 .HasOne(ir => ir.Intervention)
