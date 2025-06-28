@@ -30,14 +30,28 @@ public class DataSeeder
             // Seed categories and subcategories
             var categories = await SeedCategoriesAsync();
             
-            // Seed compounds
+            // Seed all intervention types
             var compounds = await SeedCompoundsAsync();
+            var dietaries = await SeedDietariesAsync();
+            var behaviorals = await SeedBehavioralsAsync();
+            var augmentations = await SeedAugmentationsAsync();
+            var physiologicals = await SeedPhysiologicalsAsync();
+            var wearables = await SeedWearablesAsync();
             
-            // Assign categories to compounds
-            await AssignCategoriesToCompoundsAsync(compounds, categories);
+            // Combine all interventions for category assignment and ratings
+            var allInterventions = compounds.Cast<Intervention>()
+                .Concat(dietaries.Cast<Intervention>())
+                .Concat(behaviorals.Cast<Intervention>())
+                .Concat(augmentations.Cast<Intervention>())
+                .Concat(physiologicals.Cast<Intervention>())
+                .Concat(wearables.Cast<Intervention>())
+                .ToList();
             
-            // Seed intervention ratings
-            await SeedInterventionRatingsAsync(users, compounds);
+            // Assign categories to all interventions
+            await AssignCategoriesToInterventionsAsync(allInterventions, categories);
+            
+            // Seed intervention ratings for all interventions
+            await SeedInterventionRatingsAsync(users, allInterventions);
 
             _logger.LogInformation("Data seeding completed successfully.");
         }
@@ -105,11 +119,11 @@ public class DataSeeder
         // Create main categories
         var mainCategories = new[]
         {
-            new { Name = "Pain Management", Subcategories = new[] { "Analgesics", "Anti-inflammatories", "Muscle Relaxants", "Topical Pain Relief" } },
-            new { Name = "Cardiovascular", Subcategories = new[] { "Blood Pressure", "Cholesterol", "Heart Disease", "Blood Thinners" } },
-            new { Name = "Diabetes", Subcategories = new[] { "Blood Sugar Control", "Insulin", "Oral Medications", "Monitoring" } },
-            new { Name = "Mental Health", Subcategories = new[] { "Antidepressants", "Anxiety", "Mood Stabilizers", "Sleep Aids" } },
-            new { Name = "Gastrointestinal", Subcategories = new[] { "Acid Reflux", "Ulcers", "Digestive Health", "Anti-nausea" } }
+            new { Name = "Health", Subcategories = new[] { "Sleep Quality", "Digestion", "Immune System", "Emotional Regulation" } },
+            new { Name = "Longevity", Subcategories = new[] { "Telomeres", "NAD+", "Mitochondria", "Inflammation" } },
+            new { Name = "Disease", Subcategories = new[] { "Schizophrenia", "Depression", "Cancer", "Cardiovascular Disease (CVD)" } },
+            new { Name = "Neuroenhancement", Subcategories = new[] { "Cognitive", "Social", "Mood", "Motivation" } },
+            new { Name = "Body Enhancement", Subcategories = new[] { "Performance", "Muscle", "Diagnostic", "Sensory" } }
         };
 
         foreach (var mainCat in mainCategories)
@@ -210,7 +224,162 @@ public class DataSeeder
         return await _context.Compounds.ToListAsync();
     }
 
-    private async Task AssignCategoriesToCompoundsAsync(List<Compound> compounds, List<Category> categories)
+    private async Task<List<Dietary>> SeedDietariesAsync()
+    {
+        var random = new Random();
+        var dietaries = new List<Dietary>
+        {
+            new Dietary { Name = "Mediterranean Diet", Description = "Heart-healthy diet rich in fruits, vegetables, whole grains, and healthy fats" },
+            new Dietary { Name = "Ketogenic Diet", Description = "High-fat, low-carbohydrate diet that induces ketosis" },
+            new Dietary { Name = "Intermittent Fasting", Description = "Cycling between periods of eating and fasting" },
+            new Dietary { Name = "Plant-Based Diet", Description = "Diet focused on foods derived from plants" },
+            new Dietary { Name = "Anti-Inflammatory Diet", Description = "Diet designed to reduce chronic inflammation" },
+            new Dietary { Name = "DASH Diet", Description = "Dietary Approaches to Stop Hypertension" },
+            new Dietary { Name = "Paleo Diet", Description = "Diet based on foods presumed to be available to Paleolithic humans" },
+            new Dietary { Name = "Low FODMAP Diet", Description = "Diet low in fermentable oligosaccharides, disaccharides, monosaccharides, and polyols" }
+        };
+
+        foreach (var dietary in dietaries)
+        {
+            var existingDietary = await _context.Set<Dietary>()
+                .FirstOrDefaultAsync(d => d.Name == dietary.Name);
+            
+            if (existingDietary == null)
+            {
+                _context.Set<Dietary>().Add(dietary);
+                _logger.LogInformation("Added dietary intervention: {Name}", dietary.Name);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return await _context.Set<Dietary>().ToListAsync();
+    }
+
+    private async Task<List<Behavioral>> SeedBehavioralsAsync()
+    {
+        var random = new Random();
+        var behaviorals = new List<Behavioral>
+        {
+            new Behavioral { Name = "Cognitive Behavioral Therapy", Description = "Psychotherapy that focuses on changing unhelpful cognitive distortions and behaviors" },
+            new Behavioral { Name = "Mindfulness Meditation", Description = "Practice of focusing attention on the present moment" },
+            new Behavioral { Name = "Exercise Therapy", Description = "Physical activity prescribed to improve health and fitness" },
+            new Behavioral { Name = "Sleep Hygiene", Description = "Practices and habits that promote good sleep quality" },
+            new Behavioral { Name = "Stress Management", Description = "Techniques and strategies to manage stress levels" },
+            new Behavioral { Name = "Social Support Groups", Description = "Groups providing emotional and practical support" },
+            new Behavioral { Name = "Biofeedback Training", Description = "Technique to control bodily processes through monitoring" },
+            new Behavioral { Name = "Progressive Muscle Relaxation", Description = "Technique for reducing anxiety and stress through muscle relaxation" }
+        };
+
+        foreach (var behavioral in behaviorals)
+        {
+            var existingBehavioral = await _context.Set<Behavioral>()
+                .FirstOrDefaultAsync(b => b.Name == behavioral.Name);
+            
+            if (existingBehavioral == null)
+            {
+                _context.Set<Behavioral>().Add(behavioral);
+                _logger.LogInformation("Added behavioral intervention: {Name}", behavioral.Name);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return await _context.Set<Behavioral>().ToListAsync();
+    }
+
+    private async Task<List<Augmentation>> SeedAugmentationsAsync()
+    {
+        var random = new Random();
+        var augmentations = new List<Augmentation>
+        {
+            new Augmentation { Name = "Transcranial Magnetic Stimulation", Description = "Non-invasive brain stimulation using magnetic fields" },
+            new Augmentation { Name = "Deep Brain Stimulation", Description = "Surgical treatment involving implanted electrodes" },
+            new Augmentation { Name = "Vagus Nerve Stimulation", Description = "Electrical stimulation of the vagus nerve" },
+            new Augmentation { Name = "Cochlear Implant", Description = "Electronic device that provides hearing to deaf individuals" },
+            new Augmentation { Name = "Prosthetic Limb", Description = "Artificial device that replaces a missing body part" },
+            new Augmentation { Name = "Retinal Implant", Description = "Device that restores vision to blind individuals" },
+            new Augmentation { Name = "Spinal Cord Stimulation", Description = "Electrical stimulation to treat chronic pain" },
+            new Augmentation { Name = "Cardiac Pacemaker", Description = "Device that regulates heart rhythm" }
+        };
+
+        foreach (var augmentation in augmentations)
+        {
+            var existingAugmentation = await _context.Set<Augmentation>()
+                .FirstOrDefaultAsync(a => a.Name == augmentation.Name);
+            
+            if (existingAugmentation == null)
+            {
+                _context.Set<Augmentation>().Add(augmentation);
+                _logger.LogInformation("Added augmentation intervention: {Name}", augmentation.Name);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return await _context.Set<Augmentation>().ToListAsync();
+    }
+
+    private async Task<List<Physiological>> SeedPhysiologicalsAsync()
+    {
+        var random = new Random();
+        var physiologicals = new List<Physiological>
+        {
+            new Physiological { Name = "Acupuncture", Description = "Traditional Chinese medicine technique using thin needles" },
+            new Physiological { Name = "Massage Therapy", Description = "Manipulation of soft tissues to promote healing and relaxation" },
+            new Physiological { Name = "Chiropractic Adjustment", Description = "Manual manipulation of the spine to improve alignment" },
+            new Physiological { Name = "Osteopathic Manipulation", Description = "Hands-on treatment to improve mobility and function" },
+            new Physiological { Name = "Physical Therapy", Description = "Treatment to restore movement and function" },
+            new Physiological { Name = "Occupational Therapy", Description = "Therapy to improve daily living skills" },
+            new Physiological { Name = "Respiratory Therapy", Description = "Treatment for breathing disorders" },
+            new Physiological { Name = "Hydrotherapy", Description = "Use of water for pain relief and treatment" }
+        };
+
+        foreach (var physiological in physiologicals)
+        {
+            var existingPhysiological = await _context.Set<Physiological>()
+                .FirstOrDefaultAsync(p => p.Name == physiological.Name);
+            
+            if (existingPhysiological == null)
+            {
+                _context.Set<Physiological>().Add(physiological);
+                _logger.LogInformation("Added physiological intervention: {Name}", physiological.Name);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return await _context.Set<Physiological>().ToListAsync();
+    }
+
+    private async Task<List<Wearable>> SeedWearablesAsync()
+    {
+        var random = new Random();
+        var wearables = new List<Wearable>
+        {
+            new Wearable { Name = "Fitness Tracker", Description = "Device that monitors physical activity and health metrics" },
+            new Wearable { Name = "Smart Watch", Description = "Wearable computer with health monitoring capabilities" },
+            new Wearable { Name = "Continuous Glucose Monitor", Description = "Device that tracks blood sugar levels continuously" },
+            new Wearable { Name = "Heart Rate Monitor", Description = "Device that tracks heart rate and cardiovascular metrics" },
+            new Wearable { Name = "Sleep Tracker", Description = "Device that monitors sleep patterns and quality" },
+            new Wearable { Name = "Blood Pressure Monitor", Description = "Wearable device for continuous blood pressure monitoring" },
+            new Wearable { Name = "ECG Monitor", Description = "Portable device for electrocardiogram monitoring" },
+            new Wearable { Name = "Oxygen Saturation Monitor", Description = "Device that measures blood oxygen levels" }
+        };
+
+        foreach (var wearable in wearables)
+        {
+            var existingWearable = await _context.Set<Wearable>()
+                .FirstOrDefaultAsync(w => w.Name == wearable.Name);
+            
+            if (existingWearable == null)
+            {
+                _context.Set<Wearable>().Add(wearable);
+                _logger.LogInformation("Added wearable intervention: {Name}", wearable.Name);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return await _context.Set<Wearable>().ToListAsync();
+    }
+
+    private async Task AssignCategoriesToInterventionsAsync(List<Intervention> interventions, List<Category> categories)
     {
         var random = new Random();
         var interventionCategories = new List<InterventionCategory>();
@@ -218,29 +387,29 @@ public class DataSeeder
         // Get all subcategories (categories with parent)
         var subcategories = categories.Where(c => c.ParentCategoryId.HasValue).ToList();
 
-        foreach (var compound in compounds)
+        foreach (var intervention in interventions)
         {
-            // Assign 1-5 random subcategories to each compound
-            var numCategories = random.Next(1, 3);
+            // Assign 1-3 random subcategories to each intervention
+            var numCategories = random.Next(1, 4);
             var selectedCategories = subcategories.OrderBy(x => random.Next()).Take(numCategories).ToList();
 
             foreach (var category in selectedCategories)
             {
                 // Check if assignment already exists
                 var existingAssignment = await _context.InterventionCategories
-                    .FirstOrDefaultAsync(ic => ic.InterventionId == compound.Id && ic.CategoryId == category.Id);
+                    .FirstOrDefaultAsync(ic => ic.InterventionId == intervention.Id && ic.CategoryId == category.Id);
 
                 if (existingAssignment == null)
                 {
                     var interventionCategory = new InterventionCategory
                     {
-                        InterventionId = compound.Id,
+                        InterventionId = intervention.Id,
                         CategoryId = category.Id
                     };
 
                     interventionCategories.Add(interventionCategory);
-                    _logger.LogInformation("Assigned category {Category} to compound {Compound}", 
-                        category.Name, compound.Name);
+                    _logger.LogInformation("Assigned category {Category} to intervention {Intervention}", 
+                        category.Name, intervention.Name);
                 }
             }
         }
@@ -252,15 +421,15 @@ public class DataSeeder
         }
     }
 
-    private async Task SeedInterventionRatingsAsync(List<ApplicationUser> users, List<Compound> compounds)
+    private async Task SeedInterventionRatingsAsync(List<ApplicationUser> users, List<Intervention> interventions)
     {
         var random = new Random();
         var ratings = new List<InterventionRating>();
 
-        // Create ratings for each compound by different users
-        foreach (var compound in compounds)
+        // Create ratings for each intervention by different users
+        foreach (var intervention in interventions)
         {
-            // Each compound gets ratings from 2-4 random users
+            // Each intervention gets ratings from 2-4 random users
             var numRatings = random.Next(2, 5);
             var selectedUsers = users.OrderBy(x => random.Next()).Take(numRatings).ToList();
 
@@ -268,20 +437,20 @@ public class DataSeeder
             {
                 // Check if rating already exists
                 var existingRating = await _context.InterventionRatings
-                    .FirstOrDefaultAsync(ir => ir.InterventionId == compound.Id && ir.ApplicationUserId == user.Id);
+                    .FirstOrDefaultAsync(ir => ir.InterventionId == intervention.Id && ir.ApplicationUserId == user.Id);
 
                 if (existingRating == null)
                 {
                     var rating = new InterventionRating
                     {
-                        InterventionId = compound.Id,
+                        InterventionId = intervention.Id,
                         ApplicationUserId = user.Id,
                         Rating = random.Next(1, 6) // Random rating from 1-5
                     };
 
                     ratings.Add(rating);
-                    _logger.LogInformation("Added rating {Rating} for compound {Compound} by user {User}", 
-                        rating.Rating, compound.Name, user.UserName);
+                    _logger.LogInformation("Added rating {Rating} for intervention {Intervention} by user {User}", 
+                        rating.Rating, intervention.Name, user.UserName);
                 }
             }
         }
