@@ -4,6 +4,7 @@
 @using MauiHybridAuth.Shared.Models
 @inject IInterventionService InterventionService
 @inject ICategoryService CategoryService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Interventions</PageTitle>
 
@@ -63,19 +64,25 @@
                 <Columns>
                     <RadzenDataGridColumn TItem="Intervention" Property="Name" Title="Name" Width="200px" />
                     <RadzenDataGridColumn TItem="Intervention" Property="Description" Title="Description" Width="300px" />
-                    <RadzenDataGridColumn TItem="Intervention" Title="Categories" Width="250px">
+                    <RadzenDataGridColumn TItem="Intervention" Title="Categories" Width="200px">
                         <Template Context="intervention">
                             @GetCategoriesString(intervention)
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="Intervention" Title="Average Rating" Width="150px">
+                    <RadzenDataGridColumn TItem="Intervention" Title="Average Rating" Width="120px">
                         <Template Context="intervention">
                             @intervention.CalculateAverageRating().ToString("F1")
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="Intervention" Title="Total Ratings" Width="150px">
+                    <RadzenDataGridColumn TItem="Intervention" Title="Total Ratings" Width="120px">
                         <Template Context="intervention">
                             @intervention.InterventionRatings.Count
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Intervention" Title="Actions" Width="120px">
+                        <Template Context="intervention">
+                            <RadzenButton Text="View Details" Icon="visibility" ButtonStyle="ButtonStyle.Primary"
+                                Size="ButtonSize.Small" Click="@(() => NavigateToDetails(intervention.Id))" />
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -179,5 +186,10 @@
         .ToList();
 
         return categories.Any() ? string.Join(", ", categories) : "None";
+    }
+
+    private void NavigateToDetails(Guid interventionId)
+    {
+        NavigationManager.NavigateTo($"/intervention/{interventionId}");
     }
 }

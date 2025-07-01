@@ -18,4 +18,13 @@ public class EfInterventionService : IInterventionService
                 .ThenInclude(ic => ic.Category)
             .ToListAsync();
     }
+
+    public async Task<Intervention?> GetInterventionByIdAsync(Guid id)
+    {
+        return await _db.Interventions
+            .Include(i => i.InterventionRatings)
+            .Include(i => i.InterventionCategories)
+                .ThenInclude(ic => ic.Category)
+            .FirstOrDefaultAsync(i => i.Id == id);
+    }
 }

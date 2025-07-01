@@ -10,4 +10,5 @@ namespace MauiHybridAuth.Shared.Services;
 public interface IInterventionService
 {
     Task<List<Intervention>> GetAllAsync();
+    Task<Intervention?> GetInterventionByIdAsync(Guid id);
 }

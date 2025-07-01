@@ -1,57 +1,42 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 
-<div class="layout-container">
-    <header class="layout-header">
-        <RadzenRow Class="align-items-center">
-            <RadzenColumn Size="12">
-                <div class="d-flex align-items-center">
-                    <RadzenButton Text="Home" Icon="home" NavigateUrl="" ButtonStyle="ButtonStyle.Light" />
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenMenu>
+            <RadzenMenuItem Text="Home" Icon="home" NavigateUrl="" />
 
-                    <AuthorizeView>
-                        <NotAuthorized>
-                            <RadzenButton Text="Register" Icon="person_add" NavigateUrl="Account/Register"
-                                ButtonStyle="ButtonStyle.Light" />
-                            <RadzenButton Text="Login" Icon="login" NavigateUrl="Account/Login"
-                                ButtonStyle="ButtonStyle.Light" />
-                            <RadzenButton Text="Counter" Icon="add" NavigateUrl="counter"
-                                ButtonStyle="ButtonStyle.Light" />
-                            <RadzenButton Text="Weather" Icon="cloud" NavigateUrl="weather"
-                                ButtonStyle="ButtonStyle.Light" />
-                            <RadzenButton Text="Interventions" Icon="medical_services" NavigateUrl="interventions"
-                                ButtonStyle="ButtonStyle.Light" />
-                        </NotAuthorized>
-                        <Authorized>
-                            <RadzenButton Text="Home" Icon="home" NavigateUrl="" ButtonStyle="ButtonStyle.Light" />
-                            <RadzenButton Text="Counter" Icon="add" NavigateUrl="counter"
-                                ButtonStyle="ButtonStyle.Light" />
-                            <RadzenButton Text="Weather" Icon="cloud" NavigateUrl="weather"
-                                ButtonStyle="ButtonStyle.Light" />
-                            <RadzenButton Text="Interventions" Icon="medical_services" NavigateUrl="interventions"
-                                ButtonStyle="ButtonStyle.Light" />
+            <AuthorizeView>
+                <NotAuthorized>
+                    <RadzenMenuItem Text="Register" Icon="person_add" NavigateUrl="Account/Register" />
+                    <RadzenMenuItem Text="Login" Icon="login" NavigateUrl="Account/Login" />
+                    <RadzenMenuItem Text="Interventions" Icon="medical_services" NavigateUrl="interventions" />
+                </NotAuthorized>
+                <Authorized>
+                    <RadzenMenuItem Text="Home" Icon="home" NavigateUrl="" />
+                    <RadzenMenuItem Text="Interventions" Icon="medical_services" NavigateUrl="interventions" />
 
-                            <RadzenButton Text="@context.User.Identity?.Name" Icon="person" NavigateUrl="Account/Manage"
-                                ButtonStyle="ButtonStyle.Light" />
+                    <RadzenMenuItem Text="@context.User.Identity?.Name" Icon="person" NavigateUrl="Account/Manage" />
 
-                            <form action="Account/Logout" method="post" style="display: inline;">
-                                <AntiforgeryToken />
-                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                                <RadzenButton ButtonStyle="ButtonStyle.Light" ButtonType="ButtonType.Submit"
-                                    Icon="logout" Text="Logout" />
-                            </form>
-                        </Authorized>
-                    </AuthorizeView>
-                </div>
-            </RadzenColumn>
-        </RadzenRow>
-    </header>
+                    <RadzenMenuItem>
+                        <form action="Account/Logout" method="post" style="display: inline;">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                            <RadzenButton ButtonStyle="ButtonStyle.Light" ButtonType="ButtonType.Submit" Icon="logout"
+                                Text="Logout" />
+                        </form>
+                    </RadzenMenuItem>
+                </Authorized>
+            </AuthorizeView>
+        </RadzenMenu>
+    </RadzenHeader>
 
-    <main class="layout-main">
+    <RadzenBody>
         <RadzenContainer>
             @Body
         </RadzenContainer>
-    </main>
-</div>
+    </RadzenBody>
+</RadzenLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.

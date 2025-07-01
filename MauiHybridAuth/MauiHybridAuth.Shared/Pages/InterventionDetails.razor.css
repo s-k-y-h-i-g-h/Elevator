@@ -1,0 +1,61 @@
+.intervention-details {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading p {
+    margin-top: 1rem;
+    color: #666;
+}
+
+.description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.detail-item {
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+}
+
+.detail-item strong {
+    color: #555;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.tags, .categories {
+    margin-top: 0.5rem;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+}
+
+.rating-stars {
+    display: flex;
+    align-items: center;
+}
+
+.user-rating {
+    padding: 0.5rem 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .intervention-details {
+        padding: 0 1rem;
+    }
+    
+    .description {
+        font-size: 1rem;
+    }
+} 

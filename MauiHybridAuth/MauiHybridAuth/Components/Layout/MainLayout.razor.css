@@ -76,24 +76,32 @@ main {
     }
 }
 
-/* Layout Container */
-.layout-container {
+/* Radzen Layout Styles */
+::deep .rz-layout {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
 /* Header Styles */
-.layout-header {
+::deep .rz-layout-header {
     padding: 0.5rem 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     flex-shrink: 0;
 }
 
-.layout-header .rz-button {
+/* Menu Styles */
+::deep .rz-layout-header .rz-menu {
     background: transparent !important;
     border: none !important;
-    color: white !important;
+    display: flex !important;
+    flex-direction: row !important;
+}
+
+::deep .rz-layout-header .rz-menu-item {
+    background: transparent !important;
+    border: none !important;
+    color: inherit !important;
     font-weight: 500;
     margin: 0 0.25rem;
     padding: 0.5rem 1rem !important;
@@ -101,24 +109,36 @@ main {
     transition: background-color 0.2s ease;
 }
 
-.layout-header .rz-button:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
+::deep .rz-layout-header .rz-menu-item:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    color: inherit !important;
 }
 
-.layout-header .rz-button.rz-state-active {
-    background-color: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
+::deep .rz-layout-header .rz-menu-item.rz-state-active {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    color: inherit !important;
 }
 
-/* Main Content Styles */
-.layout-main {
+::deep .rz-layout-header .rz-menu-item .rz-button {
+    background: transparent !important;
+    border: none !important;
+    color: inherit !important;
+    font-weight: 500;
+}
+
+::deep .rz-layout-header .rz-menu-item .rz-button:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    color: inherit !important;
+}
+
+/* Body Styles */
+::deep .rz-layout-body {
     background-color: #f8f9fa;
     flex: 1;
     padding: 2rem 0;
 }
 
-.layout-main .rz-container {
+::deep .rz-layout-body .rz-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1rem;
@@ -126,17 +146,17 @@ main {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .layout-header .rz-button {
+    ::deep .rz-layout-header .rz-menu-item {
         padding: 0.25rem 0.5rem !important;
         font-size: 0.9rem;
         margin: 0 0.1rem;
     }
     
-    .layout-main {
+    ::deep .rz-layout-body {
         padding: 1rem 0;
     }
     
-    .layout-main .rz-container {
+    ::deep .rz-layout-body .rz-container {
         padding: 0 0.5rem;
     }
 }
