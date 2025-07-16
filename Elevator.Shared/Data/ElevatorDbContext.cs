@@ -72,13 +72,13 @@ public class ElevatorDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(d => d.Intervention)
             .WithMany(i => i.Discussions)
             .HasForeignKey(d => d.InterventionId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Models.Discussion.Discussion>()
             .HasOne(d => d.Protocol)
             .WithMany(p => p.Discussions)
             .HasForeignKey(d => d.ProtocolId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
 
         // Configure Comment relationships
         modelBuilder.Entity<Comment>()
@@ -91,7 +91,7 @@ public class ElevatorDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(c => c.Discussion)
             .WithMany(d => d.Comments)
             .HasForeignKey(c => c.DiscussionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Comment>()
             .HasOne(c => c.ParentComment)
@@ -110,13 +110,13 @@ public class ElevatorDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(v => v.Discussion)
             .WithMany(d => d.Votes)
             .HasForeignKey(v => v.DiscussionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Vote>()
             .HasOne(v => v.Comment)
             .WithMany(c => c.Votes)
             .HasForeignKey(v => v.CommentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         // Configure Rating relationships
         modelBuilder.Entity<Rating>()
@@ -129,13 +129,13 @@ public class ElevatorDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(r => r.Intervention)
             .WithMany(i => i.Ratings)
             .HasForeignKey(r => r.InterventionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Rating>()
             .HasOne(r => r.Protocol)
             .WithMany(p => p.Ratings)
             .HasForeignKey(r => r.ProtocolId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         // Configure unique constraints
         modelBuilder.Entity<Rating>()
@@ -147,6 +147,11 @@ public class ElevatorDbContext : IdentityDbContext<ApplicationUser>
             .HasIndex(v => new { v.UserId, v.DiscussionId, v.CommentId })
             .IsUnique()
             .HasDatabaseName("IX_Vote_User_Discussion_Comment");
+
+        // Configure decimal precision for Rating value
+        modelBuilder.Entity<Rating>()
+            .Property(r => r.Value)
+            .HasPrecision(3, 1); // Allows values like 0.0, 0.5, 1.0, ..., 5.0
 
         // Configure check constraints for Rating value
         modelBuilder.Entity<Rating>()
