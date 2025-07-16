@@ -13,6 +13,12 @@ namespace MauiHybridAuth.Web.Data
         public DbSet<InterventionRating> InterventionRatings { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<InterventionCategory> InterventionCategories { get; set; }
+        public DbSet<Protocol> Protocols { get; set; }
+        public DbSet<InterventionProtocol> InterventionProtocols { get; set; }
+        public DbSet<Discussion> Discussions { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Vote> Votes { get; set; }
+        public DbSet<Advertisement> Advertisements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -127,6 +133,95 @@ namespace MauiHybridAuth.Web.Data
                         (c1, c2) => c1.SequenceEqual(c2),
                         c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                         c => c.ToList()));
+            });
+
+            // Configure Protocol relationships
+            modelBuilder.Entity<Protocol>()
+                .HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure InterventionProtocol relationships
+            modelBuilder.Entity<InterventionProtocol>(entity =>
+            {
+                entity.HasKey(ip => ip.Id);
+                
+                entity.HasOne(ip => ip.Intervention)
+                    .WithMany(i => i.InterventionProtocols)
+                    .HasForeignKey(ip => ip.InterventionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(ip => ip.Protocol)
+                    .WithMany(p => p.InterventionProtocols)
+                    .HasForeignKey(ip => ip.ProtocolId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Discussion relationships
+            modelBuilder.Entity<Discussion>(entity =>
+            {
+                entity.HasOne(d => d.Intervention)
+                    .WithMany(i => i.Discussions)
+                    .HasForeignKey(d => d.InterventionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(d => d.Protocol)
+                    .WithMany(p => p.Discussions)
+                    .HasForeignKey(d => d.ProtocolId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Configure Comment relationships
+            modelBuilder.Entity<Comment>(entity =>
+            {
+                entity.HasOne(c => c.Discussion)
+                    .WithMany(d => d.Comments)
+                    .HasForeignKey(c => c.DiscussionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(c => c.ParentComment)
+                    .WithMany(c => c.Replies)
+                    .HasForeignKey(c => c.ParentCommentId)
+                    .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete of parent comments
+                
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(c => c.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            // Configure Vote relationships
+            modelBuilder.Entity<Vote>(entity =>
+            {
+                entity.HasOne(v => v.Discussion)
+                    .WithMany(d => d.Votes)
+                    .HasForeignKey(v => v.DiscussionId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                
+                entity.HasOne(v => v.Comment)
+                    .WithMany(c => c.Votes)
+                    .HasForeignKey(v => v.CommentId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(v => v.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                // Ensure a user can only vote once per discussion or comment
+                entity.HasIndex(v => new { v.UserId, v.DiscussionId })
+                    .IsUnique()
+                    .HasFilter("[DiscussionId] IS NOT NULL");
+                
+                entity.HasIndex(v => new { v.UserId, v.CommentId })
+                    .IsUnique()
+                    .HasFilter("[CommentId] IS NOT NULL");
             });
         }
     }

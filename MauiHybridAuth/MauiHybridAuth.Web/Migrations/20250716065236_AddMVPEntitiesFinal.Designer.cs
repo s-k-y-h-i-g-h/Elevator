@@ -4,6 +4,7 @@ using MauiHybridAuth.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MauiHybridAuth.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250716065236_AddMVPEntitiesFinal")]
+    partial class AddMVPEntitiesFinal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,7 +68,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Advertisements", (string)null);
+                    b.ToTable("Advertisements");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
@@ -86,7 +89,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("ParentCategoryId");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Comment", b =>
@@ -126,7 +129,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Discussion", b =>
@@ -168,7 +171,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Discussions", (string)null);
+                    b.ToTable("Discussions");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Intervention", b =>
@@ -204,7 +207,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("InterventionCategories", (string)null);
+                    b.ToTable("InterventionCategories");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.InterventionProtocol", b =>
@@ -237,7 +240,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("ProtocolId");
 
-                    b.ToTable("InterventionProtocols", (string)null);
+                    b.ToTable("InterventionProtocols");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.InterventionRating", b =>
@@ -262,7 +265,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("InterventionId");
 
-                    b.ToTable("InterventionRatings", (string)null);
+                    b.ToTable("InterventionRatings");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Protocol", b =>
@@ -297,7 +300,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Protocols", (string)null);
+                    b.ToTable("Protocols");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Vote", b =>
@@ -336,7 +339,7 @@ namespace MauiHybridAuth.Web.Migrations
                         .IsUnique()
                         .HasFilter("[DiscussionId] IS NOT NULL");
 
-                    b.ToTable("Votes", (string)null);
+                    b.ToTable("Votes");
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Web.Data.ApplicationUser", b =>

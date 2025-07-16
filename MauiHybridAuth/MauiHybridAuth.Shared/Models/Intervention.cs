@@ -12,6 +12,12 @@ public abstract class Intervention
     
     // Navigation property for related categories
     public ICollection<InterventionCategory> InterventionCategories { get; set; } = new List<InterventionCategory>();
+    
+    // Navigation property for related protocols
+    public ICollection<InterventionProtocol> InterventionProtocols { get; set; } = new List<InterventionProtocol>();
+    
+    // Navigation property for related discussions
+    public ICollection<Discussion> Discussions { get; set; } = new List<Discussion>();
 
     public double CalculateAverageRating()
     {
@@ -24,5 +30,10 @@ public abstract class Intervention
     public IEnumerable<Category> GetCategories()
     {
         return InterventionCategories?.Select(ic => ic.Category) ?? Enumerable.Empty<Category>();
+    }
+    
+    public IEnumerable<Protocol> GetProtocols()
+    {
+        return InterventionProtocols?.Select(ip => ip.Protocol) ?? Enumerable.Empty<Protocol>();
     }
 }
