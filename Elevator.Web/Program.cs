@@ -56,6 +56,7 @@ if (app.Environment.IsDevelopment())
         try
         {
             await DatabaseSeeder.SeedAsync(scope.ServiceProvider);
+            await Elevator.Web.TestSeeding.TestDatabaseConnectionAsync(scope.ServiceProvider);
         }
         catch (Exception ex)
         {
