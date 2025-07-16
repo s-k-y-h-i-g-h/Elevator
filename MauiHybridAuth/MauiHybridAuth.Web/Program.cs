@@ -21,6 +21,7 @@ builder.Services.AddRadzenComponents();
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddScoped<IInterventionService, EfInterventionService>();
 builder.Services.AddScoped<ICategoryService, EfCategoryService>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 // Add Auth services used by the Web app
 builder.Services.AddAuthentication(options =>

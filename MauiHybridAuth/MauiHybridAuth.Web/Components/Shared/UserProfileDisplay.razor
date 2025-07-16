@@ -1,0 +1,106 @@
+@using Microsoft.AspNetCore.Identity
+@using MauiHybridAuth.Web.Data
+
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="user-profile-display">
+    @if (user != null)
+    {
+        <div class="d-flex align-items-center">
+            <div class="user-avatar me-2">
+                <div class="avatar-circle">
+                    @GetUserInitials(user.UserName)
+                </div>
+            </div>
+            <div class="user-info">
+                @if (ShowAsLink && user.IsPublicProfile)
+                {
+                    <a href="/Profile/@user.Id" class="user-link">
+                        <strong>@user.UserName</strong>
+                    </a>
+                }
+                else
+                {
+                    <strong>@user.UserName</strong>
+                }
+                @if (ShowJoinDate)
+                {
+                    <div class="text-muted small">
+                        Member since @user.CreatedAt.ToString("MMM yyyy")
+                    </div>
+                }
+                @if (ShowBio && !string.IsNullOrWhiteSpace(user.Bio))
+                {
+                    <div class="user-bio small text-muted mt-1">
+                        @(user.Bio.Length > 100 ? user.Bio.Substring(0, 100) + "..." : user.Bio)
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-muted">
+            <em>User not found</em>
+        </div>
+    }
+</div>
+
+<style>
+    .user-profile-display .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #007bff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .user-profile-display .user-link {
+        text-decoration: none;
+        color: #007bff;
+    }
+    
+    .user-profile-display .user-link:hover {
+        text-decoration: underline;
+    }
+    
+    .user-profile-display .user-bio {
+        max-width: 300px;
+    }
+</style>
+
+@code {
+    [Parameter] public string? UserId { get; set; }
+    [Parameter] public bool ShowAsLink { get; set; } = true;
+    [Parameter] public bool ShowJoinDate { get; set; } = false;
+    [Parameter] public bool ShowBio { get; set; } = false;
+    
+    private ApplicationUser? user;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(UserId))
+        {
+            user = await UserManager.FindByIdAsync(UserId);
+        }
+    }
+    
+    private string GetUserInitials(string? username)
+    {
+        if (string.IsNullOrEmpty(username))
+            return "?";
+            
+        var parts = username.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        }
+        
+        return username.Length >= 2 ? username.Substring(0, 2).ToUpper() : username.ToUpper();
+    }
+}
