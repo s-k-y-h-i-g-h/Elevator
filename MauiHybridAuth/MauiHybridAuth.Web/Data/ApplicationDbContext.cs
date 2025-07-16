@@ -9,6 +9,7 @@ namespace MauiHybridAuth.Web.Data
     {
         public DbSet<Compound> Compounds { get; set; }
         public DbSet<Intervention> Interventions { get; set; }
+        public DbSet<Device> Devices { get; set; }
         public DbSet<InterventionRating> InterventionRatings { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<InterventionCategory> InterventionCategories { get; set; }
@@ -55,6 +56,12 @@ namespace MauiHybridAuth.Web.Data
             modelBuilder.Entity<Physiological>(entity =>
             {
                 entity.ToTable("Physiological");
+                entity.UseTpcMappingStrategy();
+            });
+
+            modelBuilder.Entity<Device>(entity =>
+            {
+                entity.ToTable("Device");
                 entity.UseTpcMappingStrategy();
             });
 

@@ -19,7 +19,6 @@ builder.Services.AddRadzenComponents();
 
 // Add device-specific services used by the MauiHybridAuth.Shared project
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
-builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddScoped<IInterventionService, EfInterventionService>();
 builder.Services.AddScoped<ICategoryService, EfCategoryService>();
 
@@ -93,12 +92,5 @@ app.MapRazorComponents<App>()
 app.MapGroup("/identity").MapIdentityApi<ApplicationUser>();
 // Needed for Identity Blazor components
 app.MapAdditionalIdentityEndpoints();
-
-//Add the weather API endpoint and require authorization
-app.MapGet("/api/weather", async (IWeatherService weatherService) =>
-{
-    var forecasts = await weatherService.GetWeatherForecastsAsync();
-    return Results.Ok(forecasts);
-}).RequireAuthorization();
 
 app.Run();

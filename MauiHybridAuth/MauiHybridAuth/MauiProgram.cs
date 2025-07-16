@@ -39,7 +39,6 @@ namespace MauiHybridAuth
 
             // Add device-specific services used by the MauiHybridAuth.Shared project
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
-            builder.Services.AddScoped<IWeatherService, WeatherService>();
 
             return builder.Build();
         }

@@ -1,6 +1,6 @@
 namespace MauiHybridAuth.Shared.Models;
 
-public class Wearable : Device
+public class Device : Intervention
 {
 
 } 
