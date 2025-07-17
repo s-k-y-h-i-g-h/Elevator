@@ -34,6 +34,11 @@ public abstract class Intervention
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// AI-retrieved information about this intervention
+    /// </summary>
+    public string? AiRetrievedInfo { get; set; }
+
     // Navigation properties
     /// <summary>
     /// Discussions related to this intervention

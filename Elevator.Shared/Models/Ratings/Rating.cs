@@ -47,6 +47,11 @@ public class Rating
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// Optional review text for the rating
+    /// </summary>
+    public string? Review { get; set; }
+
     // Navigation properties
     /// <summary>
     /// User who submitted this rating

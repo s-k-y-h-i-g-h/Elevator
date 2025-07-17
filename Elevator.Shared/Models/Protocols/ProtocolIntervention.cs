@@ -33,6 +33,11 @@ public class ProtocolIntervention
     public string? Schedule { get; set; }
 
     /// <summary>
+    /// Frequency information for this intervention in the protocol
+    /// </summary>
+    public string? Frequency { get; set; }
+
+    /// <summary>
     /// Additional notes about this intervention in the protocol
     /// </summary>
     public string? Notes { get; set; }
