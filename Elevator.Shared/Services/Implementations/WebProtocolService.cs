@@ -63,7 +63,7 @@ public class WebProtocolService : IProtocolService
         {
             Name = protocolDto.Name,
             Description = protocolDto.Description,
-            UserId = "", // This should be set by the calling service with current user ID
+            UserId = protocolDto.UserId ?? throw new ArgumentException("UserId is required"),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

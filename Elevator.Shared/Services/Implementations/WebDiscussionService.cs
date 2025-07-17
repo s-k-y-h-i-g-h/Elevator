@@ -64,7 +64,7 @@ public class WebDiscussionService : IDiscussionService
             Content = discussionDto.Content,
             InterventionId = discussionDto.InterventionId,
             ProtocolId = discussionDto.ProtocolId,
-            UserId = "", // Should be set by calling service with current user ID
+            UserId = discussionDto.UserId ?? throw new ArgumentException("UserId is required"),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -91,7 +91,7 @@ public class WebDiscussionService : IDiscussionService
             Content = commentDto.Content,
             DiscussionId = commentDto.DiscussionId,
             ParentCommentId = commentDto.ParentCommentId,
-            UserId = "", // Should be set by calling service with current user ID
+            UserId = commentDto.UserId ?? throw new ArgumentException("UserId is required"),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -111,9 +111,11 @@ public class WebDiscussionService : IDiscussionService
 
     public async Task<VoteDto> VoteAsync(CreateVoteDto voteDto)
     {
+        var userId = voteDto.UserId ?? throw new ArgumentException("UserId is required");
+        
         // Check if user already voted
         var existingVote = await _context.Votes
-            .FirstOrDefaultAsync(v => v.UserId == "" && // Should use current user ID
+            .FirstOrDefaultAsync(v => v.UserId == userId &&
                                     v.DiscussionId == voteDto.DiscussionId &&
                                     v.CommentId == voteDto.CommentId);
 
@@ -128,7 +130,7 @@ public class WebDiscussionService : IDiscussionService
         // Create new vote
         var vote = new Vote
         {
-            UserId = "", // Should be set by calling service with current user ID
+            UserId = userId,
             DiscussionId = voteDto.DiscussionId,
             CommentId = voteDto.CommentId,
             IsUpvote = voteDto.IsUpvote,

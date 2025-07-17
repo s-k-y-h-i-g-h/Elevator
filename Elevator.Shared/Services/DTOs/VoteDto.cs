@@ -15,4 +15,5 @@ public class CreateVoteDto
     public int? DiscussionId { get; set; }
     public int? CommentId { get; set; }
     public bool IsUpvote { get; set; }
+    public string? UserId { get; set; } // Will be set by the calling service with current user ID
 }

@@ -46,8 +46,10 @@ public class WebRatingService : IRatingService
 
     public async Task<RatingDto> CreateOrUpdateRatingAsync(CreateRatingDto ratingDto)
     {
+        var userId = ratingDto.UserId ?? throw new ArgumentException("UserId is required");
+        
         var existingRating = await _context.Ratings
-            .FirstOrDefaultAsync(r => r.UserId == "" && // Should use current user ID
+            .FirstOrDefaultAsync(r => r.UserId == userId &&
                                     r.InterventionId == ratingDto.InterventionId &&
                                     r.ProtocolId == ratingDto.ProtocolId);
 
@@ -72,7 +74,7 @@ public class WebRatingService : IRatingService
         // Create new rating
         var rating = new Rating
         {
-            UserId = "", // Should be set by calling service with current user ID
+            UserId = userId,
             InterventionId = ratingDto.InterventionId,
             ProtocolId = ratingDto.ProtocolId,
             Value = ratingDto.Value,

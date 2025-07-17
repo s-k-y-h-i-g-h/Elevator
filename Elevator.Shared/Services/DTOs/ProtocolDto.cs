@@ -32,6 +32,7 @@ public class CreateProtocolDto
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string? UserId { get; set; } // Will be set by the calling service with current user ID
     public List<CreateProtocolInterventionDto> Interventions { get; set; } = new();
 }
 

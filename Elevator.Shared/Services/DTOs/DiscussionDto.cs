@@ -29,4 +29,5 @@ public class CreateDiscussionDto
     public string Content { get; set; } = string.Empty;
     public int? InterventionId { get; set; }
     public int? ProtocolId { get; set; }
+    public string? UserId { get; set; } // Will be set by the calling service with current user ID
 }

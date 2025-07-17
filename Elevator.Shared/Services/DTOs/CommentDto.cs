@@ -20,4 +20,5 @@ public class CreateCommentDto
     public string Content { get; set; } = string.Empty;
     public int DiscussionId { get; set; }
     public int? ParentCommentId { get; set; }
+    public string? UserId { get; set; } // Will be set by the calling service with current user ID
 }
