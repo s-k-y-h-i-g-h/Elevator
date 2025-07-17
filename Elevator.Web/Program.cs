@@ -1,8 +1,12 @@
 using Elevator.Web.Components;
 using Elevator.Shared.Data;
 using Elevator.Shared.Models.Users;
+using Elevator.Shared.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +27,37 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 })
 .AddEntityFrameworkStores<ElevatorDbContext>();
 
+// Add JWT Authentication for API endpoints (used by MAUI app)
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "your-super-secret-jwt-key-that-should-be-at-least-32-characters-long";
+var key = Encoding.ASCII.GetBytes(jwtKey);
+
+builder.Services.AddAuthentication()
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add API Controllers
+builder.Services.AddControllers();
+
+// Register service implementations
+builder.Services.AddScoped<IInterventionService, Elevator.Shared.Services.Implementations.WebInterventionService>();
+builder.Services.AddScoped<IProtocolService, Elevator.Shared.Services.Implementations.WebProtocolService>();
+builder.Services.AddScoped<IUserService, Elevator.Shared.Services.Implementations.WebUserService>();
+builder.Services.AddScoped<IDiscussionService, Elevator.Shared.Services.Implementations.WebDiscussionService>();
+builder.Services.AddScoped<IRatingService, Elevator.Shared.Services.Implementations.WebRatingService>();
 
 var app = builder.Build();
 
@@ -48,8 +80,11 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// Seed database in development
-if (app.Environment.IsDevelopment())
+// Map API Controllers
+app.MapControllers();
+
+// Seed database in development (but not in testing)
+if (app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
 {
     using (var scope = app.Services.CreateScope())
     {
@@ -67,3 +102,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
+// Make Program class accessible for testing
+public partial class Program { }
