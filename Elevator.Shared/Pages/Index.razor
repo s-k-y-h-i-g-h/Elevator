@@ -1,0 +1,78 @@
+@page "/"
+@using Radzen.Blazor
+
+<PageTitle>Elevator - Biohacking Platform</PageTitle>
+
+<RadzenStack Gap="2rem">
+    <RadzenText TextStyle="TextStyle.H3" class="rz-text-align-center">
+        Welcome to Elevator
+    </RadzenText>
+    
+    <RadzenText TextStyle="TextStyle.H6" class="rz-text-align-center" Style="color: var(--rz-text-secondary-color);">
+        Your biohacking journey starts here
+    </RadzenText>
+    
+    <CascadingValue Value="@authState">
+        @if (authState?.IsAuthenticated == true)
+        {
+            <RadzenCard class="rz-mx-auto" Style="max-width: 600px;">
+                <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.H5">
+                        Hello, @GetDisplayName()! 👋
+                    </RadzenText>
+                    
+                    <RadzenText TextStyle="TextStyle.Body1">
+                        Ready to explore biohacking interventions and optimize your protocols?
+                    </RadzenText>
+                    
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mt-4">
+                        <RadzenButton Text="Browse Interventions" 
+                                    ButtonStyle="ButtonStyle.Primary" 
+                                    Click="@(() => Navigation.NavigateTo("/interventions"))" />
+                        <RadzenButton Text="My Protocols" 
+                                    ButtonStyle="ButtonStyle.Secondary" 
+                                    Click="@(() => Navigation.NavigateTo("/protocols"))" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+        }
+        else
+        {
+            <RadzenCard class="rz-mx-auto" Style="max-width: 600px;">
+                <RadzenStack Gap="1rem">
+                    <RadzenText TextStyle="TextStyle.Body1">
+                        Discover biohacking interventions, share experiences with the community, and optimize your personal protocols.
+                    </RadzenText>
+                    
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-mt-4">
+                        <RadzenButton Text="Get Started" 
+                                    ButtonStyle="ButtonStyle.Primary" 
+                                    Click="@(() => Navigation.NavigateTo("/register"))" />
+                        <RadzenButton Text="Login" 
+                                    ButtonStyle="ButtonStyle.Light" 
+                                    Click="@(() => Navigation.NavigateTo("/login"))" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+        }
+    </CascadingValue>
+</RadzenStack>
+
+@code {
+    [CascadingParameter] public AuthenticationStateProvider.AuthenticationState? authState { get; set; }
+    [Inject] public NavigationManager Navigation { get; set; } = default!;
+
+    private string GetDisplayName()
+    {
+        if (authState?.CurrentUser != null)
+        {
+            var user = authState.CurrentUser;
+            if (!string.IsNullOrEmpty(user.FirstName))
+            {
+                return user.FirstName;
+            }
+            return user.Email;
+        }
+        return "User";
+    }
+}

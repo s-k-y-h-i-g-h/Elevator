@@ -1,0 +1,65 @@
+@using Elevator.Shared.Services.Interfaces
+@using Elevator.Shared.Services.DTOs
+@inject IAuthenticationService AuthService
+@implements IDisposable
+
+<CascadingValue Value="@authenticationState">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    
+    private AuthenticationState authenticationState = new();
+    private Timer? refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshAuthenticationState();
+        
+        // Set up a timer to periodically check authentication state
+        refreshTimer = new Timer(async _ => await RefreshAuthenticationState(), null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
+    }
+
+    private async Task RefreshAuthenticationState()
+    {
+        try
+        {
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            var isAuthenticated = AuthService.IsAuthenticated;
+            
+            authenticationState = new AuthenticationState
+            {
+                IsAuthenticated = isAuthenticated,
+                CurrentUser = currentUser,
+                CurrentUserId = AuthService.CurrentUserId
+            };
+            
+            await InvokeAsync(StateHasChanged);
+        }
+        catch
+        {
+            // Handle authentication check errors silently
+            authenticationState = new AuthenticationState
+            {
+                IsAuthenticated = false,
+                CurrentUser = null,
+                CurrentUserId = null
+            };
+            
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Dispose();
+    }
+
+    public class AuthenticationState
+    {
+        public bool IsAuthenticated { get; set; }
+        public UserDto? CurrentUser { get; set; }
+        public string? CurrentUserId { get; set; }
+    }
+}

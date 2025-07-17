@@ -1,0 +1,152 @@
+@using Elevator.Shared.Services.Interfaces
+@using Elevator.Shared.Services.DTOs
+@using Radzen
+@using Radzen.Blazor
+@inject IDiscussionService DiscussionService
+@inject IAuthenticationService AuthService
+@inject NotificationService NotificationService
+
+<div style="border-left: 2px solid var(--rz-border-color); padding-left: 1rem; margin-left: @(Level * 20)px;">
+    <RadzenCard Style="margin-bottom: 1rem;">
+        <RadzenStack Gap="0.5rem">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenText TextStyle="TextStyle.Subtitle2" Style="font-weight: 600;">
+                    @Comment.UserName
+                </RadzenText>
+                <RadzenText TextStyle="TextStyle.Caption">
+                    @Comment.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")
+                </RadzenText>
+            </RadzenStack>
+            
+            <RadzenText TextStyle="TextStyle.Body2">
+                @Comment.Content
+            </RadzenText>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="2rem">
+                <VotingComponent CommentId="@Comment.Id" 
+                               UpvoteCount="@Comment.UpvoteCount" 
+                               DownvoteCount="@Comment.DownvoteCount" 
+                               OnVoteChanged="@OnVoteChanged" />
+                
+                @if (AuthService.IsAuthenticated)
+                {
+                    <RadzenButton Text="Reply" 
+                                ButtonStyle="ButtonStyle.Light" 
+                                Size="ButtonSize.Small" 
+                                Click="@ToggleReply" />
+                }
+            </RadzenStack>
+            
+            @if (showReplyForm && AuthService.IsAuthenticated)
+            {
+                <RadzenStack Gap="0.5rem" Style="margin-top: 1rem; padding: 1rem; background: var(--rz-base-100); border-radius: 4px;">
+                    <RadzenTextArea @bind-Value="@replyContent" 
+                                  Placeholder="Write your reply..." 
+                                  Rows="3" 
+                                  Style="width: 100%;" />
+                    
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+                        <RadzenButton Text="Cancel" 
+                                    ButtonStyle="ButtonStyle.Light" 
+                                    Size="ButtonSize.Small"
+                                    Click="@CancelReply" />
+                        <RadzenButton Text="Post Reply" 
+                                    ButtonStyle="ButtonStyle.Primary" 
+                                    Size="ButtonSize.Small"
+                                    Click="@PostReply" 
+                                    Disabled="@(string.IsNullOrWhiteSpace(replyContent))"
+                                    IsBusy="@isPostingReply" />
+                    </RadzenStack>
+                </RadzenStack>
+            }
+        </RadzenStack>
+    </RadzenCard>
+    
+    @if (Comment.Replies.Any())
+    {
+        <RadzenStack Gap="0.5rem">
+            @foreach (var reply in Comment.Replies.OrderByDescending(r => r.UpvoteCount - r.DownvoteCount))
+            {
+                <CommentComponent Comment="@reply" 
+                                Level="@(Level + 1)" 
+                                OnReplyPosted="@OnReplyPosted" 
+                                OnVoteChanged="@OnVoteChanged" />
+            }
+        </RadzenStack>
+    }
+</div>
+
+@code {
+    [Parameter] public CommentDto Comment { get; set; } = new();
+    [Parameter] public int Level { get; set; } = 0;
+    [Parameter] public EventCallback OnReplyPosted { get; set; }
+    [Parameter] public EventCallback OnVoteChanged { get; set; }
+    
+    private bool showReplyForm = false;
+    private string replyContent = string.Empty;
+    private bool isPostingReply = false;
+
+    private void ToggleReply()
+    {
+        showReplyForm = !showReplyForm;
+        if (!showReplyForm)
+        {
+            replyContent = string.Empty;
+        }
+    }
+
+    private void CancelReply()
+    {
+        showReplyForm = false;
+        replyContent = string.Empty;
+    }
+
+    private async Task PostReply()
+    {
+        if (!AuthService.IsAuthenticated || string.IsNullOrWhiteSpace(replyContent))
+            return;
+
+        isPostingReply = true;
+        StateHasChanged();
+
+        try
+        {
+            var createCommentDto = new CreateCommentDto
+            {
+                Content = replyContent.Trim(),
+                DiscussionId = Comment.DiscussionId,
+                ParentCommentId = Comment.Id,
+                UserId = AuthService.CurrentUserId
+            };
+
+            var newReply = await DiscussionService.AddCommentAsync(createCommentDto);
+            
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Reply Posted",
+                Detail = "Your reply has been added to the discussion.",
+                Duration = 3000
+            });
+
+            replyContent = string.Empty;
+            showReplyForm = false;
+            await OnReplyPosted.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Reply Failed",
+                Detail = "Failed to post your reply. Please try again.",
+                Duration = 4000
+            });
+        }
+        finally
+        {
+            isPostingReply = false;
+            StateHasChanged();
+        }
+    }
+}

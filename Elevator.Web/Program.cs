@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,12 +53,16 @@ builder.Services.AddRazorComponents()
 // Add API Controllers
 builder.Services.AddControllers();
 
+// Add Radzen services
+builder.Services.AddScoped<NotificationService>();
+
 // Register service implementations
 builder.Services.AddScoped<IInterventionService, Elevator.Shared.Services.Implementations.WebInterventionService>();
 builder.Services.AddScoped<IProtocolService, Elevator.Shared.Services.Implementations.WebProtocolService>();
 builder.Services.AddScoped<IUserService, Elevator.Shared.Services.Implementations.WebUserService>();
 builder.Services.AddScoped<IDiscussionService, Elevator.Shared.Services.Implementations.WebDiscussionService>();
 builder.Services.AddScoped<IRatingService, Elevator.Shared.Services.Implementations.WebRatingService>();
+builder.Services.AddScoped<IAuthenticationService, Elevator.Shared.Services.Implementations.WebAuthenticationService>();
 
 var app = builder.Build();
 

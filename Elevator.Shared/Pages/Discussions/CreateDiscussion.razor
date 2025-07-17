@@ -1,0 +1,271 @@
+@page "/discussions/new"
+@using Elevator.Shared.Services.Interfaces
+@using Elevator.Shared.Services.DTOs
+@using Radzen
+@using Radzen.Blazor
+@inject IDiscussionService DiscussionService
+@inject IInterventionService InterventionService
+@inject IProtocolService ProtocolService
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+
+<PageTitle>Create Discussion - Elevator</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <RadzenStack Gap="2rem">
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenText TextStyle="TextStyle.H3">
+                    Start a New Discussion
+                </RadzenText>
+                <RadzenButton Text="← Cancel" 
+                            ButtonStyle="ButtonStyle.Light" 
+                            Click="@(() => Navigation.NavigateTo(-1))" />
+            </RadzenStack>
+            
+            <RadzenCard>
+                <EditForm Model="@discussionModel" OnValidSubmit="@CreateDiscussion">
+                    <DataAnnotationsValidator />
+                    
+                    <RadzenStack Gap="1rem">
+                        <RadzenFormField Text="Discussion Topic" Variant="Variant.Outlined">
+                            <RadzenDropDown @bind-Value="@discussionModel.TopicType" 
+                                          Data="@topicTypes" 
+                                          ValueProperty="Value" 
+                                          TextProperty="Text" 
+                                          Placeholder="Select topic type" 
+                                          Style="width: 100%;" 
+                                          Change="@OnTopicTypeChanged" />
+                            <ValidationMessage For="@(() => discussionModel.TopicType)" />
+                        </RadzenFormField>
+                        
+                        @if (discussionModel.TopicType == "intervention")
+                        {
+                            <RadzenFormField Text="Intervention" Variant="Variant.Outlined">
+                                <RadzenDropDown @bind-Value="@discussionModel.InterventionId" 
+                                              Data="@interventions" 
+                                              ValueProperty="Id" 
+                                              TextProperty="Name" 
+                                              Placeholder="Select an intervention" 
+                                              Style="width: 100%;" 
+                                              AllowFiltering="true" />
+                                <ValidationMessage For="@(() => discussionModel.InterventionId)" />
+                            </RadzenFormField>
+                        }
+                        else if (discussionModel.TopicType == "protocol")
+                        {
+                            <RadzenFormField Text="Protocol" Variant="Variant.Outlined">
+                                <RadzenDropDown @bind-Value="@discussionModel.ProtocolId" 
+                                              Data="@protocols" 
+                                              ValueProperty="Id" 
+                                              TextProperty="Name" 
+                                              Placeholder="Select a protocol" 
+                                              Style="width: 100%;" 
+                                              AllowFiltering="true" />
+                                <ValidationMessage For="@(() => discussionModel.ProtocolId)" />
+                            </RadzenFormField>
+                        }
+                        
+                        <RadzenFormField Text="Discussion Title" Variant="Variant.Outlined">
+                            <RadzenTextBox @bind-Value="@discussionModel.Title" 
+                                         Placeholder="Enter a descriptive title for your discussion" 
+                                         Style="width: 100%;" />
+                            <ValidationMessage For="@(() => discussionModel.Title)" />
+                        </RadzenFormField>
+                        
+                        <RadzenFormField Text="Content" Variant="Variant.Outlined">
+                            <RadzenTextArea @bind-Value="@discussionModel.Content" 
+                                          Placeholder="Share your thoughts, questions, or experiences..." 
+                                          Rows="8" 
+                                          Style="width: 100%;" />
+                            <ValidationMessage For="@(() => discussionModel.Content)" />
+                        </RadzenFormField>
+                        
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="1rem">
+                            <RadzenButton Text="Cancel" 
+                                        ButtonStyle="ButtonStyle.Light" 
+                                        Click="@(() => Navigation.NavigateTo(-1))" />
+                            <RadzenButton ButtonType="ButtonType.Submit" 
+                                        Text="Create Discussion" 
+                                        ButtonStyle="ButtonStyle.Primary" 
+                                        IsBusy="@isCreating" />
+                        </RadzenStack>
+                    </RadzenStack>
+                </EditForm>
+            </RadzenCard>
+        </RadzenStack>
+    </Authorized>
+    <NotAuthorized>
+        <RadzenCard>
+            <RadzenStack Gap="1rem" class="rz-text-align-center">
+                <RadzenText TextStyle="TextStyle.H5">
+                    Please log in to create a discussion
+                </RadzenText>
+                <RadzenButton Text="Login" 
+                            ButtonStyle="ButtonStyle.Primary" 
+                            Click="@(() => Navigation.NavigateTo("/login"))" />
+            </RadzenStack>
+        </RadzenCard>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter, SupplyParameterFromQuery] public int? InterventionId { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int? ProtocolId { get; set; }
+    
+    private CreateDiscussionModel discussionModel = new();
+    private bool isCreating = false;
+    private IEnumerable<InterventionDto>? interventions;
+    private IEnumerable<ProtocolDto>? protocols;
+
+    private readonly List<TopicTypeOption> topicTypes = new()
+    {
+        new TopicTypeOption { Value = "general", Text = "General Discussion" },
+        new TopicTypeOption { Value = "intervention", Text = "About an Intervention" },
+        new TopicTypeOption { Value = "protocol", Text = "About a Protocol" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Pre-select topic type and item based on query parameters
+        if (InterventionId.HasValue)
+        {
+            discussionModel.TopicType = "intervention";
+            discussionModel.InterventionId = InterventionId.Value;
+            await LoadInterventions();
+        }
+        else if (ProtocolId.HasValue)
+        {
+            discussionModel.TopicType = "protocol";
+            discussionModel.ProtocolId = ProtocolId.Value;
+            await LoadProtocols();
+        }
+        else
+        {
+            discussionModel.TopicType = "general";
+        }
+    }
+
+    private async Task OnTopicTypeChanged()
+    {
+        discussionModel.InterventionId = null;
+        discussionModel.ProtocolId = null;
+
+        if (discussionModel.TopicType == "intervention" && interventions == null)
+        {
+            await LoadInterventions();
+        }
+        else if (discussionModel.TopicType == "protocol" && protocols == null)
+        {
+            await LoadProtocols();
+        }
+    }
+
+    private async Task LoadInterventions()
+    {
+        try
+        {
+            interventions = await InterventionService.GetInterventionsAsync();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Error Loading Interventions",
+                Detail = "Failed to load interventions. Please try again.",
+                Duration = 4000
+            });
+        }
+    }
+
+    private async Task LoadProtocols()
+    {
+        try
+        {
+            protocols = await ProtocolService.GetProtocolsAsync();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Error Loading Protocols",
+                Detail = "Failed to load protocols. Please try again.",
+                Duration = 4000
+            });
+        }
+    }
+
+    private async Task CreateDiscussion()
+    {
+        if (!AuthService.IsAuthenticated) return;
+
+        isCreating = true;
+        StateHasChanged();
+
+        try
+        {
+            var createDiscussionDto = new CreateDiscussionDto
+            {
+                Title = discussionModel.Title,
+                Content = discussionModel.Content,
+                InterventionId = discussionModel.TopicType == "intervention" ? discussionModel.InterventionId : null,
+                ProtocolId = discussionModel.TopicType == "protocol" ? discussionModel.ProtocolId : null,
+                UserId = AuthService.CurrentUserId
+            };
+
+            var newDiscussion = await DiscussionService.CreateDiscussionAsync(createDiscussionDto);
+            
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Discussion Created",
+                Detail = "Your discussion has been created successfully.",
+                Duration = 3000
+            });
+
+            Navigation.NavigateTo($"/discussions/{newDiscussion.Id}");
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Creation Failed",
+                Detail = "Failed to create your discussion. Please try again.",
+                Duration = 4000
+            });
+        }
+        finally
+        {
+            isCreating = false;
+            StateHasChanged();
+        }
+    }
+
+    public class CreateDiscussionModel
+    {
+        [Required(ErrorMessage = "Topic type is required")]
+        public string TopicType { get; set; } = "general";
+
+        public int? InterventionId { get; set; }
+        
+        public int? ProtocolId { get; set; }
+
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(200, ErrorMessage = "Title must be less than 200 characters")]
+        public string Title { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Content is required")]
+        [StringLength(5000, ErrorMessage = "Content must be less than 5000 characters")]
+        public string Content { get; set; } = string.Empty;
+    }
+
+    public class TopicTypeOption
+    {
+        public string Value { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+    }
+}

@@ -1,0 +1,364 @@
+@page "/protocols/{id:int}"
+@using Elevator.Shared.Services.Interfaces
+@using Elevator.Shared.Services.DTOs
+@using Radzen
+@using Radzen.Blazor
+@inject IProtocolService ProtocolService
+@inject IRatingService RatingService
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+
+<PageTitle>@(protocol?.Name ?? "Protocol") - Elevator</PageTitle>
+
+@if (isLoading)
+{
+    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else if (protocol == null)
+{
+    <RadzenCard>
+        <RadzenStack Gap="1rem" class="rz-text-align-center">
+            <RadzenText TextStyle="TextStyle.H5">
+                Protocol Not Found
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1">
+                The requested protocol could not be found.
+            </RadzenText>
+            <RadzenButton Text="Back to Protocols" 
+                        ButtonStyle="ButtonStyle.Primary" 
+                        Click="@(() => Navigation.NavigateTo("/protocols"))" />
+        </RadzenStack>
+    </RadzenCard>
+}
+else
+{
+    <RadzenStack Gap="2rem">
+        <!-- Header Section -->
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
+                    <RadzenStack Gap="0.5rem">
+                        <RadzenText TextStyle="TextStyle.H3">
+                            @protocol.Name
+                        </RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">
+                            Created by @protocol.UserName on @protocol.CreatedAt.ToString("MMMM dd, yyyy")
+                        </RadzenText>
+                    </RadzenStack>
+                    
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                        @if (AuthService.IsAuthenticated && AuthService.CurrentUserId == protocol.UserId)
+                        {
+                            <RadzenButton Text="Edit" 
+                                        ButtonStyle="ButtonStyle.Secondary" 
+                                        Icon="edit"
+                                        Click="@(() => Navigation.NavigateTo($"/protocols/{protocol.Id}/edit"))" />
+                        }
+                        <RadzenButton Text="← Back to List" 
+                                    ButtonStyle="ButtonStyle.Light" 
+                                    Click="@(() => Navigation.NavigateTo("/protocols"))" />
+                    </RadzenStack>
+                </RadzenStack>
+                
+                <RadzenText TextStyle="TextStyle.Body1">
+                    @protocol.Description
+                </RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+
+        <!-- Rating Section -->
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenText TextStyle="TextStyle.H5">
+                    Community Rating
+                </RadzenText>
+                
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="2rem">
+                    <RadzenStack Gap="0.5rem">
+                        <RadzenRating @bind-Value="@protocol.AverageRating" ReadOnly="true" Stars="5" />
+                        <RadzenText TextStyle="TextStyle.Body2">
+                            @protocol.AverageRating.ToString("F1") out of 5 (@protocol.RatingCount @(protocol.RatingCount == 1 ? "rating" : "ratings"))
+                        </RadzenText>
+                    </RadzenStack>
+                    
+                    @if (AuthService.IsAuthenticated)
+                    {
+                        <RadzenStack Gap="0.5rem">
+                            <RadzenText TextStyle="TextStyle.Subtitle2">
+                                Your Rating:
+                            </RadzenText>
+                            <RadzenRating @bind-Value="@userRatingValue" 
+                                        Stars="5" 
+                                        Change="@OnUserRatingChanged" />
+                            @if (isSubmittingRating)
+                            {
+                                <RadzenProgressBarCircular Size="ProgressBarCircularSize.Small" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                            }
+                        </RadzenStack>
+                    }
+                    else
+                    {
+                        <RadzenText TextStyle="TextStyle.Body2">
+                            <RadzenLink Path="/login" Text="Login" /> to rate this protocol
+                        </RadzenText>
+                    }
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+
+        <!-- Interventions Section -->
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenText TextStyle="TextStyle.H5">
+                    Interventions (@protocol.Interventions.Count)
+                </RadzenText>
+                
+                @if (protocol.Interventions.Any())
+                {
+                    <RadzenDataGrid Data="@protocol.Interventions" 
+                                   TItem="ProtocolInterventionDto" 
+                                   AllowPaging="false" 
+                                   AllowSorting="false">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="ProtocolInterventionDto" Property="InterventionName" Title="Intervention" Width="200px">
+                                <Template Context="intervention">
+                                    <RadzenLink Path="@($"/interventions/{intervention.InterventionId}")" 
+                                              Text="@intervention.InterventionName" 
+                                              Style="font-weight: 600;" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                            
+                            <RadzenDataGridColumn TItem="ProtocolInterventionDto" Property="Dosage" Title="Dosage" Width="120px">
+                                <Template Context="intervention">
+                                    @if (!string.IsNullOrEmpty(intervention.Dosage))
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Body2">
+                                            @intervention.Dosage
+                                        </RadzenText>
+                                    }
+                                    else
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">
+                                            Not specified
+                                        </RadzenText>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            
+                            <RadzenDataGridColumn TItem="ProtocolInterventionDto" Property="Frequency" Title="Frequency" Width="120px">
+                                <Template Context="intervention">
+                                    @if (!string.IsNullOrEmpty(intervention.Frequency))
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Body2">
+                                            @intervention.Frequency
+                                        </RadzenText>
+                                    }
+                                    else
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">
+                                            Not specified
+                                        </RadzenText>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            
+                            <RadzenDataGridColumn TItem="ProtocolInterventionDto" Property="Notes" Title="Notes">
+                                <Template Context="intervention">
+                                    @if (!string.IsNullOrEmpty(intervention.Notes))
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Body2">
+                                            @intervention.Notes
+                                        </RadzenText>
+                                    }
+                                    else
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-text-secondary-color);">
+                                            No notes
+                                        </RadzenText>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                }
+                else
+                {
+                    <RadzenText TextStyle="TextStyle.Body2" class="rz-text-align-center">
+                        No interventions added to this protocol yet.
+                    </RadzenText>
+                }
+            </RadzenStack>
+        </RadzenCard>
+
+        <!-- Discussions Section -->
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                    <RadzenText TextStyle="TextStyle.H5">
+                        Discussions (@protocol.Discussions.Count)
+                    </RadzenText>
+                    
+                    @if (AuthService.IsAuthenticated)
+                    {
+                        <RadzenButton Text="New Discussion" 
+                                    ButtonStyle="ButtonStyle.Primary" 
+                                    Size="ButtonSize.Small"
+                                    Click="@(() => Navigation.NavigateTo($"/discussions/new?protocolId={protocol.Id}"))" />
+                    }
+                </RadzenStack>
+                
+                @if (protocol.Discussions.Any())
+                {
+                    @foreach (var discussion in protocol.Discussions.OrderByDescending(d => d.CreatedAt))
+                    {
+                        <RadzenCard Style="border-left: 3px solid var(--rz-primary);">
+                            <RadzenStack Gap="0.5rem">
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Start">
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Style="font-weight: 600;">
+                                        @discussion.Title
+                                    </RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Caption">
+                                        @discussion.CreatedAt.ToString("MMM dd, yyyy")
+                                    </RadzenText>
+                                </RadzenStack>
+                                
+                                <RadzenText TextStyle="TextStyle.Body2" Style="max-height: 100px; overflow: hidden;">
+                                    @discussion.Content
+                                </RadzenText>
+                                
+                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                                    <RadzenText TextStyle="TextStyle.Caption">
+                                        by @discussion.UserName
+                                    </RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Caption">
+                                        ↑ @discussion.VoteCount votes
+                                    </RadzenText>
+                                    <RadzenButton Text="View Discussion" 
+                                                ButtonStyle="ButtonStyle.Light" 
+                                                Size="ButtonSize.Small" 
+                                                Click="@(() => Navigation.NavigateTo($"/discussions/{discussion.Id}"))" />
+                                </RadzenStack>
+                            </RadzenStack>
+                        </RadzenCard>
+                    }
+                }
+                else
+                {
+                    <RadzenText TextStyle="TextStyle.Body2" class="rz-text-align-center">
+                        No discussions yet. Be the first to start a conversation about this protocol!
+                    </RadzenText>
+                }
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenStack>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    
+    private ProtocolDetailDto? protocol;
+    private bool isLoading = true;
+    private decimal userRatingValue = 0;
+    private bool isSubmittingRating = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProtocol();
+        await LoadUserRating();
+    }
+
+    private async Task LoadProtocol()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            protocol = await ProtocolService.GetProtocolAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            // Handle error
+            protocol = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUserRating()
+    {
+        if (!AuthService.IsAuthenticated || protocol == null) return;
+
+        try
+        {
+            var currentUserId = AuthService.CurrentUserId;
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                var userRating = await RatingService.GetUserRatingAsync(currentUserId, protocolId: protocol.Id);
+                userRatingValue = userRating?.Value ?? 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle error silently
+            userRatingValue = 0;
+        }
+    }
+
+    private async Task OnUserRatingChanged(int rating)
+    {
+        if (!AuthService.IsAuthenticated || protocol == null) return;
+
+        isSubmittingRating = true;
+        StateHasChanged();
+
+        try
+        {
+            var currentUserId = AuthService.CurrentUserId;
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                var createRatingDto = new CreateRatingDto
+                {
+                    ProtocolId = protocol.Id,
+                    Value = rating,
+                    UserId = currentUserId
+                };
+
+                await RatingService.CreateOrUpdateRatingAsync(createRatingDto);
+                
+                NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Rating Submitted",
+                    Detail = $"You rated {protocol.Name} {rating} star{(rating == 1 ? "" : "s")}",
+                    Duration = 3000
+                });
+
+                // Reload protocol to get updated average rating
+                await LoadProtocol();
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Rating Failed",
+                Detail = "Failed to submit your rating. Please try again.",
+                Duration = 4000
+            });
+            
+            // Reset the rating value
+            await LoadUserRating();
+        }
+        finally
+        {
+            isSubmittingRating = false;
+            StateHasChanged();
+        }
+    }
+}
