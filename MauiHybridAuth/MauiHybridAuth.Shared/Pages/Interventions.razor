@@ -10,18 +10,16 @@
 <PageTitle>Interventions</PageTitle>
 
 <div class="container-fluid">
-    <div class="mb-4">
-        <h1 class="text-primary">
-            <i class="bi bi-capsule"></i> Interventions
-        </h1>
-        <p class="text-muted">A comprehensive list of health and wellness compounds</p>
-    </div>
 
     @if (!string.IsNullOrEmpty(Category1))
     {
         @if (categoryComponentType != null)
         {
-            <DynamicComponent Type="categoryComponentType" />
+            <div class="card shadow">
+                <div class="card-body">
+                    <DynamicComponent Type="categoryComponentType" />
+                </div>
+            </div>
         }
         else
         {
@@ -51,14 +49,6 @@
     }
     else
     {
-        <div class="row mb-3">
-            <div class="col-12 text-end">
-                <span class="badge bg-primary fs-6">
-                    Total: @compounds.Count compounds
-                </span>
-            </div>
-        </div>
-
         <div class="card shadow">
             <div class="card-body">
                 <div class="table-responsive">
@@ -132,8 +122,19 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadCompounds();
+        LoadCategoryComponent(); // Load component on initial load
+    }
 
-    if (!string.IsNullOrEmpty(Category1))
+    protected override async Task OnParametersSetAsync()
+    {
+        // This runs when route parameters change
+        await LoadCompounds();
+        LoadCategoryComponent(); // Reload component when parameters change
+    }
+
+    private void LoadCategoryComponent()
+    {
+        if (!string.IsNullOrEmpty(Category1))
         {
             // Try to find a component with the category name
             var titleCaseCategory = char.ToUpper(Category1[0]) + Category1.Substring(1).ToLower();

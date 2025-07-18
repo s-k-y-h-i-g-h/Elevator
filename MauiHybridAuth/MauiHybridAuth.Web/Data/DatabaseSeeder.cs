@@ -41,45 +41,52 @@ namespace MauiHybridAuth.Web.Data
             // Sample compound data with realistic names, durations, and dose ranges
             var compoundData = new[]
             {
-                new { Name = "Caffeine", DurationOptions = new[] { "4-6 hours", "3-5 hours", "5-7 hours" }, DoseRanges = new[] { "50-100mg", "100-200mg", "200-400mg" } },
-                new { Name = "L-Theanine", DurationOptions = new[] { "2-3 hours", "3-4 hours", "1-3 hours" }, DoseRanges = new[] { "100-200mg", "200-400mg", "50-100mg" } },
-                new { Name = "Creatine", DurationOptions = new[] { "N/A (builds up)", "Ongoing", "Cumulative" }, DoseRanges = new[] { "3-5g daily", "5-10g daily", "2-3g daily" } },
-                new { Name = "Magnesium", DurationOptions = new[] { "6-8 hours", "4-6 hours", "8-12 hours" }, DoseRanges = new[] { "200-400mg", "400-600mg", "100-200mg" } },
-                new { Name = "Vitamin D", DurationOptions = new[] { "24-48 hours", "12-24 hours", "2-3 days" }, DoseRanges = new[] { "1000-2000 IU", "2000-4000 IU", "4000-6000 IU" } },
-                new { Name = "Omega-3", DurationOptions = new[] { "6-12 hours", "12-24 hours", "4-8 hours" }, DoseRanges = new[] { "500-1000mg", "1000-2000mg", "300-500mg" } },
-                new { Name = "Vitamin B12", DurationOptions = new[] { "24-72 hours", "12-24 hours", "3-5 days" }, DoseRanges = new[] { "100-500mcg", "500-1000mcg", "1000-2500mcg" } },
-                new { Name = "Zinc", DurationOptions = new[] { "8-12 hours", "6-8 hours", "12-16 hours" }, DoseRanges = new[] { "8-15mg", "15-30mg", "5-10mg" } },
-                new { Name = "Iron", DurationOptions = new[] { "6-8 hours", "8-12 hours", "4-6 hours" }, DoseRanges = new[] { "15-25mg", "25-50mg", "8-15mg" } },
-                new { Name = "Melatonin", DurationOptions = new[] { "4-6 hours", "6-8 hours", "3-5 hours" }, DoseRanges = new[] { "0.5-1mg", "1-3mg", "3-5mg" } },
-                new { Name = "Ashwagandha", DurationOptions = new[] { "6-8 hours", "8-12 hours", "4-6 hours" }, DoseRanges = new[] { "300-500mg", "500-1000mg", "600-1200mg" } },
-                new { Name = "Rhodiola", DurationOptions = new[] { "4-6 hours", "6-8 hours", "3-5 hours" }, DoseRanges = new[] { "200-400mg", "400-600mg", "100-200mg" } },
-                new { Name = "Ginkgo Biloba", DurationOptions = new[] { "4-6 hours", "6-8 hours", "2-4 hours" }, DoseRanges = new[] { "120-240mg", "240-480mg", "60-120mg" } },
-                new { Name = "Turmeric", DurationOptions = new[] { "6-8 hours", "8-12 hours", "4-6 hours" }, DoseRanges = new[] { "500-1000mg", "1000-1500mg", "300-500mg" } },
-                new { Name = "CoQ10", DurationOptions = new[] { "12-24 hours", "8-12 hours", "6-10 hours" }, DoseRanges = new[] { "100-200mg", "200-400mg", "50-100mg" } },
-                new { Name = "Alpha-GPC", DurationOptions = new[] { "4-6 hours", "6-8 hours", "3-5 hours" }, DoseRanges = new[] { "300-600mg", "600-1200mg", "150-300mg" } },
-                new { Name = "Lion's Mane", DurationOptions = new[] { "6-8 hours", "8-12 hours", "4-6 hours" }, DoseRanges = new[] { "500-1000mg", "1000-3000mg", "300-500mg" } },
-                new { Name = "Bacopa Monnieri", DurationOptions = new[] { "6-8 hours", "8-12 hours", "4-6 hours" }, DoseRanges = new[] { "300-600mg", "600-900mg", "150-300mg" } },
-                new { Name = "Modafinil", DurationOptions = new[] { "8-12 hours", "10-15 hours", "6-10 hours" }, DoseRanges = new[] { "100-200mg", "200-400mg", "50-100mg" } },
-                new { Name = "Phenylpiracetam", DurationOptions = new[] { "4-6 hours", "6-8 hours", "3-5 hours" }, DoseRanges = new[] { "100-200mg", "200-400mg", "50-100mg" } }
+                new { Name = "Caffeine", Duration = "4-6 hours", DoseRange = "100-200mg" },
+                new { Name = "L-Theanine", Duration = "2-3 hours", DoseRange = "100-200mg" },
+                new { Name = "Creatine", Duration = "N/A (builds up)", DoseRange = "3-5g daily" },
+                new { Name = "Magnesium", Duration = "6-8 hours", DoseRange = "200-400mg" },
+                new { Name = "Vitamin D", Duration = "24-48 hours", DoseRange = "1000-2000 IU" },
+                new { Name = "Omega-3", Duration = "6-12 hours", DoseRange = "500-1000mg" },
+                new { Name = "Vitamin B12", Duration = "24-72 hours", DoseRange = "100-500mcg" },
+                new { Name = "Zinc", Duration = "8-12 hours", DoseRange = "8-15mg" },
+                new { Name = "Iron", Duration = "6-8 hours", DoseRange = "15-25mg" },
+                new { Name = "Melatonin", Duration = "4-6 hours", DoseRange = "0.5-1mg" },
+                new { Name = "Ashwagandha", Duration = "6-8 hours", DoseRange = "300-500mg" },
+                new { Name = "Rhodiola", Duration = "4-6 hours", DoseRange = "200-400mg" },
+                new { Name = "Ginkgo Biloba", Duration = "4-6 hours", DoseRange = "120-240mg" },
+                new { Name = "Turmeric", Duration = "6-8 hours", DoseRange = "500-1000mg" },
+                new { Name = "CoQ10", Duration = "12-24 hours", DoseRange = "100-200mg" },
+                new { Name = "Alpha-GPC", Duration = "4-6 hours", DoseRange = "300-600mg" },
+                new { Name = "Lion's Mane", Duration = "6-8 hours", DoseRange = "500-1000mg" },
+                new { Name = "Bacopa Monnieri", Duration = "6-8 hours", DoseRange = "300-600mg" },
+                new { Name = "Modafinil", Duration = "8-12 hours", DoseRange = "100-200mg" },
+                new { Name = "Phenylpiracetam", Duration = "4-6 hours", DoseRange = "100-200mg" },
+                new { Name = "NAD+", Duration = "2-4 hours", DoseRange = "250-500mg" },
+                new { Name = "Resveratrol", Duration = "6-8 hours", DoseRange = "150-500mg" },
+                new { Name = "Quercetin", Duration = "12-24 hours", DoseRange = "500-1000mg" },
+                new { Name = "Curcumin", Duration = "6-8 hours", DoseRange = "500-1000mg" },
+                new { Name = "Green Tea Extract", Duration = "4-6 hours", DoseRange = "300-500mg" },
+                new { Name = "Spirulina", Duration = "4-6 hours", DoseRange = "1-3g" },
+                new { Name = "Chlorella", Duration = "4-6 hours", DoseRange = "2-3g" },
+                new { Name = "Berberine", Duration = "6-8 hours", DoseRange = "500-1500mg" },
+                new { Name = "Alpha-Lipoic Acid", Duration = "3-4 hours", DoseRange = "300-600mg" },
+                new { Name = "PQQ", Duration = "8-12 hours", DoseRange = "10-20mg" },
+                new { Name = "Nicotinamide Riboside", Duration = "6-8 hours", DoseRange = "300-1000mg" },
+                new { Name = "Spermidine", Duration = "12-24 hours", DoseRange = "1-10mg" },
+                new { Name = "Fisetin", Duration = "8-12 hours", DoseRange = "100-500mg" },
+                new { Name = "Pterostilbene", Duration = "6-8 hours", DoseRange = "50-250mg" },
+                new { Name = "Sulforaphane", Duration = "4-6 hours", DoseRange = "10-100mg" }
             };
 
             for (int i = 0; i < count; i++)
             {
-                var baseCompound = compoundData[random.Next(compoundData.Length)];
-                
-                // Add some variation to names for duplicates
-                var name = baseCompound.Name;
-                if (compounds.Any(c => c.Name == name))
-                {
-                    var suffixes = new[] { "Extended Release", "Immediate Release", "Micronized", "Chelated", "Liposomal", "Buffered" };
-                    name = $"{baseCompound.Name} ({suffixes[random.Next(suffixes.Length)]})";
-                }
+                var baseCompound = compoundData[i % compoundData.Length];
 
                 var compound = new Compound
                 {
-                    Name = name,
-                    Duration = baseCompound.DurationOptions[random.Next(baseCompound.DurationOptions.Length)],
-                    DoseRange = baseCompound.DoseRanges[random.Next(baseCompound.DoseRanges.Length)]
+                    Name = baseCompound.Name,
+                    Duration = baseCompound.Duration,
+                    DoseRange = baseCompound.DoseRange
                 };
 
                 compounds.Add(compound);
