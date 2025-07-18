@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Elevator.Services;
 
 namespace Elevator
 {
@@ -15,6 +16,17 @@ namespace Elevator
                 });
 
             builder.Services.AddMauiBlazorWebView();
+
+            // Register authentication services
+            builder.Services.AddHttpClient<AuthApiClient>(client =>
+            {
+                // Configure base address - this should be updated to match your API URL
+                client.BaseAddress = new Uri("https://localhost:7001/"); // Default development URL
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+
+            builder.Services.AddSingleton<SecureTokenStorage>();
+            builder.Services.AddSingleton<AuthStateService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
