@@ -32,7 +32,15 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString)
+        .UseSeeding((context, _) =>
+        {
+            DatabaseSeeder.SeedCompounds((ApplicationDbContext)context);
+        })
+        .UseAsyncSeeding(async (context, _, cancellationToken) =>
+        {
+            await DatabaseSeeder.SeedCompoundsAsync((ApplicationDbContext)context, cancellationToken);
+        }));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 //Needed for external clients to log in

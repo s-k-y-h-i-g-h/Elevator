@@ -1,0 +1,12 @@
+@page "/interventions"
+@using MauiHybridAuth.Shared.Services
+@inject IFormFactor FormFactor
+
+<PageTitle>Interventions</PageTitle>
+
+<h1>Interventions</h1>
+
+@code {
+    private string factor => FormFactor.GetFormFactor();
+    private string platform => FormFactor.GetPlatform();
+}
