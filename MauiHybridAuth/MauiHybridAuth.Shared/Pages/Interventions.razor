@@ -60,6 +60,9 @@
                                     <i class="bi bi-tag-fill"></i> Name
                                 </th>
                                 <th scope="col">
+                                    <i class="bi bi-collection-fill"></i> Categories
+                                </th>
+                                <th scope="col">
                                     <i class="bi bi-clock-fill"></i> Duration
                                 </th>
                                 <th scope="col">
@@ -82,6 +85,20 @@
                                                 @compound.Name.Substring(0, Math.Min(2, compound.Name.Length)).ToUpper()
                                             </div>
                                             <strong>@compound.Name</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach (var category in compound.Categories)
+                                            {
+                                                <span class="badge bg-info text-dark" style="font-size: 0.75rem;">
+                                                    @category.Name
+                                                </span>
+                                            }
+                                            @if (!compound.Categories.Any())
+                                            {
+                                                <span class="text-muted fst-italic">No categories</span>
+                                            }
                                         </div>
                                     </td>
                                     <td>
@@ -152,7 +169,7 @@
         try
         {
             isLoading = true;
-            compounds = await CompoundService.GetAllCompoundsAsync();
+            compounds = await CompoundService.GetCompoundsByCategoryAsync(Category1, Category2, Category3);
         }
         catch (Exception ex)
         {
