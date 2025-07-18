@@ -1,5 +1,9 @@
 @implements IDisposable
 @inject NavigationManager NavigationManager
+@inject ICategoryService CategoryService
+@using MauiHybridAuth.Shared.Services
+@using MauiHybridAuth.Shared.Models
+@using MauiHybridAuth.Shared.Extensions
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -23,16 +27,49 @@
                         <span class="bi bi-heart-pulse-nav-menu" aria-hidden="true"></span> Interventions
                     </NavLink>
                 </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="interventions/longevity">
-                        <span class="bi bi-heart-pulse-nav-menu" aria-hidden="true"></span> Longevity
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="interventions/neuroenhancement">
-                        <span class="bi bi-heart-pulse-nav-menu" aria-hidden="true"></span> Neuroenhancement
-                    </NavLink>
-                </div>
+
+                @* Category Navigation *@
+                @if (rootCategories != null && rootCategories.Any())
+                {
+                    @foreach (var category in rootCategories)
+                    {
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link category-level-1" href="@GetCategoryUrl(category.Name)">
+                                <span class="bi bi-dot" aria-hidden="true"></span> @category.Name.ToTitleCase()
+                            </NavLink>
+
+                            @* Subcategories *@
+                            @if (category.Subcategories?.Any() == true)
+                            {
+                                @foreach (var subcategory in category.Subcategories)
+                                {
+                                    <div class="nav-item px-3">
+                                        <NavLink class="nav-link category-level-2"
+                                            href="@GetCategoryUrl(category.Name, subcategory.Name)">
+                                            <span class="bi bi-dash" aria-hidden="true"></span> @subcategory.Name.ToTitleCase()
+                                        </NavLink>
+
+                                        @* Sub-subcategories *@
+                                        @if (subcategory.Subcategories?.Any() == true)
+                                        {
+                                            @foreach (var subSubcategory in subcategory.Subcategories)
+                                            {
+                                                <div class="nav-item px-3">
+                                                    <NavLink class="nav-link category-level-3"
+                                                        href="@GetCategoryUrl(category.Name, subcategory.Name, subSubcategory.Name)">
+                                                        <span class="bi bi-arrow-return-right" aria-hidden="true"></span>
+                                                        @subSubcategory.Name.ToTitleCase()
+                                                    </NavLink>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                }
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Register">
                         <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
@@ -55,16 +92,9 @@
                         <span class="bi bi-heart-pulse-nav-menu" aria-hidden="true"></span> Interventions
                     </NavLink>
                 </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="interventions/longevity">
-                        <span class="bi bi-heart-pulse-nav-menu" aria-hidden="true"></span> Longevity
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="interventions/neuroenhancement">
-                        <span class="bi bi-heart-pulse-nav-menu" aria-hidden="true"></span> Neuroenhancement
-                    </NavLink>
-                </div>
+
+
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
@@ -86,11 +116,64 @@
 
 @code {
     private string? currentUrl;
+    private List<Category> rootCategories = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+
+        // Load categories
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        try
+        {
+            var allCategories = await CategoryService.GetAllCategoriesAsync();
+
+            // Build the hierarchical structure
+            rootCategories = allCategories.Where(c => c.Parent == null).ToList();
+
+            foreach (var rootCategory in rootCategories)
+            {
+                LoadSubcategories(rootCategory, allCategories);
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading categories: {ex.Message}");
+        }
+    }
+
+    private void LoadSubcategories(Category parent, List<Category> allCategories)
+    {
+        var subcategories = allCategories.Where(c => c.ParentId == parent.Id).ToList();
+        parent.Subcategories = subcategories;
+
+        foreach (var subcategory in subcategories)
+        {
+            LoadSubcategories(subcategory, allCategories);
+        }
+    }
+
+    private string GetCategoryUrl(string category1)
+    {
+        return $"interventions/{Uri.EscapeDataString(category1.ToLower())}";
+    }
+
+    private string GetCategoryUrl(string category1, string category2)
+    {
+        return $"interventions/{Uri.EscapeDataString(category1.ToLower())}/{Uri.EscapeDataString(category2.ToLower())}";
+    }
+
+    private string GetCategoryUrl(string category1, string category2, string category3)
+    {
+        return
+        $"interventions/{Uri.EscapeDataString(category1.ToLower())}/{Uri.EscapeDataString(category2.ToLower())}/{Uri.EscapeDataString(category3.ToLower())}";
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)

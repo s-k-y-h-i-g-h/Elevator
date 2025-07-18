@@ -47,7 +47,64 @@
 }
 
 .bi-lock-nav-menu {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-list-nested' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-list-nested' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1 1V9a1 1 0 0 1 1-1z'/%3E%3C/svg%3E");
+}
+
+/* Category Navigation Styles - consistent with regular nav items */
+.nav-link.category-level-1,
+.nav-link.category-level-2,
+.nav-link.category-level-3 {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+/* Indentation for category hierarchy */
+.nav-link.category-level-1 {
+    margin-left: 0;
+}
+
+.nav-link.category-level-2 {
+    margin-left: 1.25rem;
+    font-size: 0.95rem;
+}
+
+.nav-link.category-level-3 {
+    margin-left: 2.5rem;
+    font-size: 0.9rem;
+}
+
+.nav-link.category-level-1:hover,
+.nav-link.category-level-2:hover,
+.nav-link.category-level-3:hover {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+}
+
+.nav-link.category-level-1.active,
+.nav-link.category-level-2.active,
+.nav-link.category-level-3.active {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+}
+
+/* Icons for category navigation */
+.bi-heart-pulse-nav-menu {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-heart-pulse' viewBox='0 0 16 16'%3E%3Cpath d='m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053.918 3.995.78 5.323 1.508 7H.43c-.242 0-.43.192-.43.43v.674c0 .238.188.43.43.43h2.094l.734-2.101C3.753 4.924 5.047 4.49 6.5 5.565L8 2.748Zm-.717 5.043a.5.5 0 0 1 .934 0l.216.549a.5.5 0 0 0 .416.292h.623c.243 0 .363.31.177.463l-.513.39a.5.5 0 0 0-.177.55l.216.549c.094.238-.123.486-.327.364l-.513-.39a.5.5 0 0 0-.554 0l-.513.39c-.204.122-.42-.126-.327-.364l.216-.549a.5.5 0 0 0-.177-.55l-.513-.39c-.186-.153-.066-.463.177-.463h.623a.5.5 0 0 0 .416-.292l.216-.549Z'/%3E%3C/svg%3E");
+}
+
+.bi-dot,
+.bi-dash,
+.bi-arrow-return-right {
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-right: 0.5rem;
 }
 
 .bi-person-nav-menu {
