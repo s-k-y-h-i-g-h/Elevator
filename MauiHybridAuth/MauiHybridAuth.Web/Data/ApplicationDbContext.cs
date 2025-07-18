@@ -36,6 +36,24 @@ namespace MauiHybridAuth.Web.Data
 
             modelBuilder.Entity<Category>()
                 .ToTable("Categories");
+
+            // Configure many-to-many relationship between Interventions and Categories
+            modelBuilder.Entity<Intervention>()
+                .HasMany(i => i.Categories)
+                .WithMany(c => c.Interventions)
+                .UsingEntity<Dictionary<string, object>>(
+                    "InterventionCategory",
+                    j => j
+                        .HasOne<Category>()
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<Intervention>()
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                );
         }
     }
 }

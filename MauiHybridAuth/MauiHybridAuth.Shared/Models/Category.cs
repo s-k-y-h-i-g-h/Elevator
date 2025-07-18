@@ -13,5 +13,8 @@ namespace MauiHybridAuth.Shared.Models
         
         // Navigation property for subcategories (can be empty)
         public ICollection<Category> Subcategories { get; set; } = new List<Category>();
+        
+        // Many-to-many relationship with Interventions
+        public ICollection<Intervention> Interventions { get; set; } = new List<Intervention>();
     }
 } 
