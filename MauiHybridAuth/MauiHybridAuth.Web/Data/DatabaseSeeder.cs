@@ -140,9 +140,11 @@ namespace MauiHybridAuth.Web.Data
             var vitamins = new Category { Name = "Vitamins", Parent = health };
             var minerals = new Category { Name = "Minerals", Parent = health };
             var essentialNutrients = new Category { Name = "Essential Nutrients", Parent = health };
-            var generalWellness = new Category { Name = "General Wellness", Parent = health };
+            var hair = new Category { Name = "Hair", Parent = health };
+            var greyHairPrevention = new Category { Name = "Grey Hair Prevention", Parent = hair };
+            var hairLossPrevention = new Category { Name = "Hair Loss Prevention", Parent = hair };
 
-            categories.AddRange(new[] { vitamins, minerals, essentialNutrients, generalWellness });
+            categories.AddRange(new[] { vitamins, minerals, essentialNutrients, hair, greyHairPrevention, hairLossPrevention });
 
             // Longevity subcategories - The 12 Hallmarks of Aging (López-Otín et al., 2023)
             // Primary Hallmarks
