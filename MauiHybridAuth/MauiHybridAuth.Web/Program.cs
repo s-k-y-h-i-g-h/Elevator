@@ -18,6 +18,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddScoped<ICompoundService, CompoundService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 // Add Auth services used by the Web app
 builder.Services.AddAuthentication(options =>
@@ -36,11 +37,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString)
         .UseSeeding((context, _) =>
         {
-            DatabaseSeeder.SeedCompounds((ApplicationDbContext)context);
+            DatabaseSeeder.SeedAll((ApplicationDbContext)context);
         })
         .UseAsyncSeeding(async (context, _, cancellationToken) =>
         {
-            await DatabaseSeeder.SeedCompoundsAsync((ApplicationDbContext)context, cancellationToken);
+            await DatabaseSeeder.SeedAllAsync((ApplicationDbContext)context, cancellationToken);
         }));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

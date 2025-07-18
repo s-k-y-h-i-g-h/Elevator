@@ -5,6 +5,23 @@ namespace MauiHybridAuth.Web.Data
 {
     public static class DatabaseSeeder
     {
+        public static void SeedAll(ApplicationDbContext context)
+        {
+            SeedCategories(context);
+            SeedCompounds(context);
+        }
+
+        public static void SeedCategories(ApplicationDbContext context)
+        {
+            // Check if categories already exist
+            if (context.Categories.Any())
+                return;
+
+            var categories = GenerateTestCategories();
+            context.Categories.AddRange(categories);
+            context.SaveChanges();
+        }
+
         public static void SeedCompounds(ApplicationDbContext context)
         {
             // Check if compounds already exist
@@ -71,6 +88,23 @@ namespace MauiHybridAuth.Web.Data
             return compounds;
         }
 
+        public static async Task SeedAllAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            await SeedCategoriesAsync(context, cancellationToken);
+            await SeedCompoundsAsync(context, cancellationToken);
+        }
+
+        public static async Task SeedCategoriesAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            // Check if categories already exist
+            if (await context.Categories.AnyAsync(cancellationToken))
+                return;
+
+            var categories = GenerateTestCategories();
+            context.Categories.AddRange(categories);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
         public static async Task SeedCompoundsAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
         {
             // Check if compounds already exist
@@ -80,6 +114,80 @@ namespace MauiHybridAuth.Web.Data
             var compounds = GenerateTestCompounds(100);
             context.Compounds.AddRange(compounds);
             await context.SaveChangesAsync(cancellationToken);
+        }
+
+        private static List<Category> GenerateTestCategories()
+        {
+            var categories = new List<Category>();
+
+            // Root categories
+            var health = new Category { Name = "Health" };
+            var longevity = new Category { Name = "Longevity" };
+            var neuroenhancement = new Category { Name = "Neuroenhancement" };
+            var physicalEnhancement = new Category { Name = "Physical Enhancement" };
+            var disease = new Category { Name = "Disease" };
+
+            categories.AddRange(new[] { health, longevity, neuroenhancement, physicalEnhancement, disease });
+
+            // Health subcategories
+            var vitamins = new Category { Name = "Vitamins", Parent = health };
+            var minerals = new Category { Name = "Minerals", Parent = health };
+            var essentialNutrients = new Category { Name = "Essential Nutrients", Parent = health };
+            var generalWellness = new Category { Name = "General Wellness", Parent = health };
+
+            categories.AddRange(new[] { vitamins, minerals, essentialNutrients, generalWellness });
+
+            // Longevity subcategories - The 12 Hallmarks of Aging (López-Otín et al., 2023)
+            // Primary Hallmarks
+            var genomicInstability = new Category { Name = "Genomic Instability", Parent = longevity };
+            var telomereAttrition = new Category { Name = "Telomere Attrition", Parent = longevity };
+            var epigeneticAlterations = new Category { Name = "Epigenetic Alterations", Parent = longevity };
+            var lossOfProteostasis = new Category { Name = "Loss of Proteostasis", Parent = longevity };
+            var disabledMacroautophagy = new Category { Name = "Disabled Macroautophagy", Parent = longevity };
+            
+            // Antagonistic Hallmarks
+            var deregulatedNutrientSensing = new Category { Name = "Deregulated Nutrient-Sensing", Parent = longevity };
+            var mitochondrialDysfunction = new Category { Name = "Mitochondrial Dysfunction", Parent = longevity };
+            var cellularSenescence = new Category { Name = "Cellular Senescence", Parent = longevity };
+            
+            // Integrative Hallmarks
+            var stemCellExhaustion = new Category { Name = "Stem Cell Exhaustion", Parent = longevity };
+            var alteredIntercellularCommunication = new Category { Name = "Altered Intercellular Communication", Parent = longevity };
+            var chronicInflammation = new Category { Name = "Chronic Inflammation", Parent = longevity };
+            var dysbiosis = new Category { Name = "Dysbiosis", Parent = longevity };
+
+            categories.AddRange(new[] { genomicInstability, telomereAttrition, epigeneticAlterations, lossOfProteostasis, disabledMacroautophagy, 
+                                      deregulatedNutrientSensing, mitochondrialDysfunction, cellularSenescence, 
+                                      stemCellExhaustion, alteredIntercellularCommunication, chronicInflammation, dysbiosis });
+
+            // Neuroenhancement subcategories
+            var focus = new Category { Name = "Focus", Parent = neuroenhancement };
+            var memory = new Category { Name = "Memory", Parent = neuroenhancement };
+            var creativity = new Category { Name = "Creativity", Parent = neuroenhancement };
+            var neuroprotection = new Category { Name = "Neuroprotection", Parent = neuroenhancement };
+
+            categories.AddRange(new[] { focus, memory, creativity, neuroprotection });
+
+            // Physical Enhancement subcategories
+            var endurance = new Category { Name = "Endurance", Parent = physicalEnhancement };
+            var strength = new Category { Name = "Strength", Parent = physicalEnhancement };
+            var recovery = new Category { Name = "Recovery", Parent = physicalEnhancement };
+            var fatLoss = new Category { Name = "Fat Loss", Parent = physicalEnhancement };
+            var performance = new Category { Name = "Performance", Parent = physicalEnhancement };
+
+            categories.AddRange(new[] { endurance, strength, recovery, fatLoss, performance });
+
+            // Disease subcategories
+            var anxiety = new Category { Name = "Anxiety", Parent = disease };
+            var depression = new Category { Name = "Depression", Parent = disease };
+            var stress = new Category { Name = "Stress", Parent = disease };
+            var insomnia = new Category { Name = "Insomnia", Parent = disease };
+            var inflammation = new Category { Name = "Inflammation", Parent = disease };
+            var immuneDisorders = new Category { Name = "Immune Disorders", Parent = disease };
+
+            categories.AddRange(new[] { anxiety, depression, stress, insomnia, inflammation, immuneDisorders });
+
+            return categories;
         }
     }
 } 
