@@ -1,0 +1,31 @@
+@using Elevator.Shared.Models
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2>@Title</h2>
+            @if (!string.IsNullOrEmpty(Subtitle))
+            {
+                <p class="auth-subtitle">@Subtitle</p>
+            }
+        </div>
+        
+        <div class="auth-content">
+            @ChildContent
+        </div>
+        
+        @if (!string.IsNullOrEmpty(FooterText))
+        {
+            <div class="auth-footer">
+                <p>@FooterText</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Subtitle { get; set; } = string.Empty;
+    [Parameter] public string FooterText { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

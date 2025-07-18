@@ -1,0 +1,60 @@
+@using Elevator.Shared.Models
+@using Elevator.Shared.Services
+
+<link href="~/Components/Auth/AuthForms.css" rel="stylesheet" />
+
+<EditForm Model="@LoginRequest" OnValidSubmit="@HandleSubmit">
+    <div class="form-group">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="LoginRequest.Email" class="form-control" placeholder="Enter your email" />
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Password</label>
+        <InputText id="password" @bind-Value="LoginRequest.Password" type="password" class="form-control" placeholder="Enter your password" />
+    </div>
+    
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-error">
+            @ErrorMessage
+        </div>
+    }
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary" disabled="@IsLoading">
+            @if (IsLoading)
+            {
+                <span class="spinner"></span>
+                <span>Signing in...</span>
+            }
+            else
+            {
+                <span>Sign In</span>
+            }
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public EventCallback<LoginRequest> OnSubmit { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string ErrorMessage { get; set; } = string.Empty;
+    
+    [Inject] public IAuthValidationService ValidationService { get; set; } = default!;
+    
+    public LoginRequest LoginRequest { get; set; } = new();
+    
+    private async Task HandleSubmit()
+    {
+        var validation = ValidationService.ValidateLoginRequest(LoginRequest);
+        if (!validation.IsValid)
+        {
+            ErrorMessage = validation.ErrorMessage;
+            return;
+        }
+        
+        ErrorMessage = string.Empty;
+        await OnSubmit.InvokeAsync(LoginRequest);
+    }
+}
