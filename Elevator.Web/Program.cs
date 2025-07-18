@@ -1,6 +1,8 @@
 using Elevator.Web.Components;
 using Elevator.Web.Data;
 using Elevator.Web.Data.Models;
+using Elevator.Web.Services;
+using Elevator.Shared.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add API controllers
+builder.Services.AddControllers();
 
 // Add Entity Framework and Identity services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -29,6 +34,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+// Register authentication services
+builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IAuthValidationService, AuthValidationService>();
 
 var app = builder.Build();
 
@@ -52,5 +61,8 @@ app.UseAuthorization();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(Elevator.Shared._Imports).Assembly);
+
+// Map API controllers
+app.MapControllers();
 
 app.Run();
