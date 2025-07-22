@@ -1,7 +1,5 @@
 @page "/interventions"
-@page "/interventions/{category1}"
-@page "/interventions/{category1}/{category2}"
-@page "/interventions/{category1}/{category2}/{category3}"
+
 @using MauiHybridAuth.Shared.Models
 @using MauiHybridAuth.Shared.Services
 @using MauiHybridAuth.Shared.Components.Categories
@@ -29,75 +27,6 @@
     }
     else
     {
-        @if (!string.IsNullOrEmpty(Category1))
-        {
-            <!-- Side by Side Layout: Category Component + Interventions Table -->
-            <div class="row g-4">
-                <!-- Category Component Column (Left Side) - Now taking majority -->
-                <div class="col-lg-8 col-md-7">
-                    <div class="position-sticky" style="top: 1rem;">
-                        @if (categoryComponentType != null)
-                        {
-                            <div class="card shadow">
-                                <div class="card-body">
-                                    <DynamicComponent Type="categoryComponentType" />
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="alert alert-warning">
-                                <i class="bi bi-info-triangle"></i>
-                                <strong>@Category1</strong> category information is not yet available.
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- Interventions Table Column (Right Side) - Now smaller -->
-                <div class="col-lg-4 col-md-5">
-                    <div class="card shadow">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-striped">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th scope="col" class="text-center" style="width: 50px;">#</th>
-                                            <th scope="col">
-                                                <i class="bi bi-tag-fill"></i> Name
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @{
-                                            int index = 1;
-                                        }
-                                        @foreach (var compound in compounds)
-                                        {
-                                            <tr>
-                                                <td class="text-center fw-bold text-muted">@index</td>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
-                                                            style="width: 32px; height: 32px; font-size: 12px; font-weight: bold;">
-                                                            @compound.Name.Substring(0, Math.Min(2, compound.Name.Length)).ToUpper()
-                                                        </div>
-                                                        <strong>@compound.Name</strong>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            index++;
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
             <!-- Stacked Layout: Filter Controls Above Table -->
             <div class="card shadow mb-4">
                 <div class="card-body">
@@ -106,24 +35,6 @@
                             <i class="bi bi-funnel-fill text-primary"></i>
                             Filters
                         </h6>
-                    </div>
-                    <p class="text-muted small">Select a category from the navigation menu to filter interventions and view detailed information.</p>
-                    
-                    <!-- Filter controls in a row -->
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label small">Search</label>
-                            <input type="text" class="form-control form-control-sm" placeholder="Filter by name...">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small">Type</label>
-                            <select class="form-select form-select-sm">
-                                <option>All Types</option>
-                                <option>Supplements</option>
-                                <option>Lifestyle</option>
-                                <option>Medical</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -180,40 +91,17 @@
 </div>
 
 @code {
-    [Parameter] public string? Category1 { get; set; }
-    [Parameter] public string? Category2 { get; set; }
-    [Parameter] public string? Category3 { get; set; }
-
     private List<Compound> compounds = new();
     private bool isLoading = true;
-    private Type? categoryComponentType;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCompounds();
-        LoadCategoryComponent(); // Load component on initial load
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        // This runs when route parameters change
         await LoadCompounds();
-        LoadCategoryComponent(); // Reload component when parameters change
-    }
-
-    private void LoadCategoryComponent()
-    {
-        if (!string.IsNullOrEmpty(Category1))
-        {
-            // Try to find a component with the category name
-            var titleCaseCategory = char.ToUpper(Category1[0]) + Category1.Substring(1).ToLower();
-            var componentName = $"MauiHybridAuth.Shared.Components.Categories.{titleCaseCategory}";
-            categoryComponentType = Type.GetType(componentName);
-        }
-        else
-        {
-            categoryComponentType = null;
-        }
     }
 
     private async Task LoadCompounds()
@@ -221,7 +109,7 @@
         try
         {
             isLoading = true;
-            compounds = await CompoundService.GetCompoundsByCategoryAsync(Category1, Category2, Category3);
+            compounds = await CompoundService.GetAllCompoundsAsync();
         }
         catch (Exception ex)
         {
