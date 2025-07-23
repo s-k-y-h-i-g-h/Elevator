@@ -289,29 +289,33 @@ namespace MauiHybridAuth.Web.Data
             categories.AddRange(new[] { health, longevity, neuroenhancement, physicalEnhancement, disease });
 
             // Health subcategories
-            var vitamins = new Category { Name = "Vitamins", Parent = health };
-            var minerals = new Category { Name = "Minerals", Parent = health };
-            var essentialNutrients = new Category { Name = "Essential Nutrients", Parent = health };
+            var essential = new Category { Name = "Essential", Parent = health };
             var hair = new Category { Name = "Hair", Parent = health };
             var greyHairPrevention = new Category { Name = "Grey Hair Prevention", Parent = hair };
             var hairLossPrevention = new Category { Name = "Hair Loss Prevention", Parent = hair };
+            var skin = new Category { Name = "Skin", Parent = health };
+            var sex = new Category { Name = "Sex", Parent = health };
+            var dental = new Category { Name = "Dental", Parent = health };
+            var sleep = new Category { Name = "Sleep", Parent = health };
+            var slowWaveSleep = new Category { Name = "Slow Wave Sleep", Parent = sleep };
+            var rapidEyeMovement = new Category { Name = "Rapid Eye Movement", Parent = sleep };
+            var latency = new Category { Name = "Latency", Parent = sleep };
+            var duration = new Category { Name = "Duration", Parent = sleep };
+            var joint = new Category { Name = "Joint", Parent = health };
+            var digestion = new Category { Name = "Digestion", Parent = health };
+            var bone = new Category { Name = "Bone", Parent = health };
+            var diagnosticHealth = new Category { Name = "Diagnostic", Parent = health };
 
-            categories.AddRange(new[] { vitamins, minerals, essentialNutrients, hair, greyHairPrevention, hairLossPrevention });
+            categories.AddRange(new[] { essential, hair, greyHairPrevention, hairLossPrevention, skin, sex, dental, sleep, slowWaveSleep, rapidEyeMovement, latency, duration, joint, digestion, bone, diagnosticHealth });
 
-            // Longevity subcategories - The 12 Hallmarks of Aging (López-Otín et al., 2023)
-            // Primary Hallmarks
             var genomicInstability = new Category { Name = "Genomic Instability", Parent = longevity };
             var telomereAttrition = new Category { Name = "Telomere Attrition", Parent = longevity };
             var epigeneticAlterations = new Category { Name = "Epigenetic Alterations", Parent = longevity };
             var lossOfProteostasis = new Category { Name = "Loss of Proteostasis", Parent = longevity };
             var disabledMacroautophagy = new Category { Name = "Disabled Macroautophagy", Parent = longevity };
-            
-            // Antagonistic Hallmarks
             var deregulatedNutrientSensing = new Category { Name = "Deregulated Nutrient-Sensing", Parent = longevity };
             var mitochondrialDysfunction = new Category { Name = "Mitochondrial Dysfunction", Parent = longevity };
             var cellularSenescence = new Category { Name = "Cellular Senescence", Parent = longevity };
-            
-            // Integrative Hallmarks
             var stemCellExhaustion = new Category { Name = "Stem Cell Exhaustion", Parent = longevity };
             var alteredIntercellularCommunication = new Category { Name = "Altered Intercellular Communication", Parent = longevity };
             var chronicInflammation = new Category { Name = "Chronic Inflammation", Parent = longevity };
@@ -326,8 +330,23 @@ namespace MauiHybridAuth.Web.Data
             var memory = new Category { Name = "Memory", Parent = neuroenhancement };
             var creativity = new Category { Name = "Creativity", Parent = neuroenhancement };
             var neuroprotection = new Category { Name = "Neuroprotection", Parent = neuroenhancement };
+            var concentration = new Category { Name = "Concentration", Parent = neuroenhancement };
+            var executiveFunction = new Category { Name = "Executive Function", Parent = neuroenhancement };
+            var perception = new Category { Name = "Perception", Parent = neuroenhancement };
+            var language = new Category { Name = "Language", Parent = neuroenhancement };
+            var reasoning = new Category { Name = "Reasoning", Parent = neuroenhancement };
+            var processingSpeed = new Category { Name = "Processing Speed", Parent = neuroenhancement };
+            var stressResistance = new Category { Name = "Stress Resistance", Parent = neuroenhancement };
+            var happiness = new Category { Name = "Happiness", Parent = neuroenhancement };
+            var cognitiveFlexibility = new Category { Name = "Cognitive Flexibility", Parent = neuroenhancement };
+            var mood = new Category { Name = "Mood", Parent = neuroenhancement };
+            var motivation = new Category { Name = "Motivation", Parent = neuroenhancement };
+            var selfEsteem = new Category { Name = "Self-Esteem", Parent = neuroenhancement };
+            var confidence = new Category { Name = "Confidence", Parent = neuroenhancement };
+            var social = new Category { Name = "Social", Parent = neuroenhancement };
+            var motor = new Category { Name = "Motor", Parent = neuroenhancement };
 
-            categories.AddRange(new[] { focus, memory, creativity, neuroprotection });
+            categories.AddRange(new[] { focus, memory, creativity, neuroprotection, concentration, executiveFunction, perception, language, reasoning, processingSpeed, stressResistance, happiness, cognitiveFlexibility, mood, motivation, selfEsteem, confidence, social, motor });
 
             // Physical Enhancement subcategories
             var endurance = new Category { Name = "Endurance", Parent = physicalEnhancement };
@@ -335,8 +354,13 @@ namespace MauiHybridAuth.Web.Data
             var recovery = new Category { Name = "Recovery", Parent = physicalEnhancement };
             var fatLoss = new Category { Name = "Fat Loss", Parent = physicalEnhancement };
             var performance = new Category { Name = "Performance", Parent = physicalEnhancement };
+            var muscleGain = new Category { Name = "Muscle Gain", Parent = physicalEnhancement };
+            var aesthetic = new Category { Name = "Aesthetic", Parent = physicalEnhancement };
+            var sensory = new Category { Name = "Sensory", Parent = physicalEnhancement };
+            var functional = new Category { Name = "Functional", Parent = physicalEnhancement };
+            var diagnosticPhysical = new Category { Name = "Diagnostic", Parent = physicalEnhancement };
 
-            categories.AddRange(new[] { endurance, strength, recovery, fatLoss, performance });
+            categories.AddRange(new[] { endurance, strength, recovery, fatLoss, performance, muscleGain, aesthetic, sensory, functional, diagnosticPhysical });
 
             // Disease subcategories
             var anxiety = new Category { Name = "Anxiety", Parent = disease };
@@ -344,9 +368,18 @@ namespace MauiHybridAuth.Web.Data
             var stress = new Category { Name = "Stress", Parent = disease };
             var insomnia = new Category { Name = "Insomnia", Parent = disease };
             var inflammation = new Category { Name = "Inflammation", Parent = disease };
-            var immuneDisorders = new Category { Name = "Immune Disorders", Parent = disease };
+            var addiction = new Category { Name = "Addiction", Parent = disease };
+            var schizophrenia = new Category { Name = "Schizophrenia", Parent = disease };
+            var obesity = new Category { Name = "Obesity", Parent = disease };
+            var borderlinePersonalityDisorder = new Category { Name = "Borderline Personality Disorder", Parent = disease };
+            var autism = new Category { Name = "Autism", Parent = disease };
+            var herpesSimplex = new Category { Name = "Herpes Simplex", Parent = disease };
+            var cardiovascularDisease = new Category { Name = "Cardiovascular Disease", Parent = disease };
+            var cancer = new Category { Name = "Cancer", Parent = disease };
+            var stroke = new Category { Name = "Stroke", Parent = disease };
+            var diabetes = new Category { Name = "Diabetes", Parent = disease };
 
-            categories.AddRange(new[] { anxiety, depression, stress, insomnia, inflammation, immuneDisorders });
+            categories.AddRange(new[] { anxiety, depression, stress, insomnia, inflammation, addiction, schizophrenia, obesity, borderlinePersonalityDisorder, autism, herpesSimplex, cardiovascularDisease, cancer, stroke, diabetes });
 
             return categories;
         }
