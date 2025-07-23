@@ -69,11 +69,6 @@
                         </ol>
                     </nav>
 
-                    <h2 class="h4 mb-3">
-                        <i class="bi bi-capsule text-primary"></i>
-                        @GetCategoryPath() Interventions
-                    </h2>
-
                     @if (isLoading)
                     {
                         <div class="text-center py-5">
@@ -96,10 +91,6 @@
                     }
                     else
                     {
-                        <p class="text-muted mb-3">
-                            Found <strong>@interventions.Count</strong> intervention@(interventions.Count != 1 ? "s" : "")
-                        </p>
-
                         <div class="table-responsive">
                             <table class="table table-hover table-striped table-sm">
                                 <thead class="table-dark">
@@ -125,18 +116,19 @@
                                                 <div class="d-flex align-items-center">
                                                     <div class="@GetTypeIconClass(intervention) text-white rounded-circle d-flex align-items-center justify-content-center me-2"
                                                         style="width: 24px; height: 24px; font-size: 10px; font-weight: bold;">
-                                                        @intervention.Name.Substring(0, Math.Min(2, intervention.Name.Length)).ToUpper()
-                                                    </div>
-                                                    <span class="small">@intervention.Name</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge @GetTypeBadgeClass(intervention) small">
-                                                    @GetInterventionTypeShortName(intervention)
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        index++;
+                                                        @intervention.Name.Substring(0, Math.Min(2,
+                                                        intervention.Name.Length)).ToUpper()
+                                            </div>
+                                            <span class="small">@intervention.Name</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetTypeBadgeClass(intervention) small">
+                                            @GetInterventionTypeShortName(intervention)
+                                        </span>
+                                    </td>
+                                </tr>
+                                                                index++;
                                     }
                                 </tbody>
                             </table>

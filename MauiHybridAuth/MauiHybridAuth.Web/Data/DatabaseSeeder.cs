@@ -42,73 +42,8 @@ namespace MauiHybridAuth.Web.Data
             if (context.Set<Dictionary<string, object>>("InterventionCategory").Any())
                 return;
 
-            var compounds = context.Compounds.ToList();
-            var categories = context.Categories.ToList();
-
-            if (!compounds.Any() || !categories.Any())
-                return;
-
-            // Find specific categories for assignment
-            var vitamins = categories.FirstOrDefault(c => c.Name == "Vitamins");
-            var minerals = categories.FirstOrDefault(c => c.Name == "Minerals");
-            var neuroenhancement = categories.FirstOrDefault(c => c.Name == "Neuroenhancement");
-            var focus = categories.FirstOrDefault(c => c.Name == "Focus");
-            var longevity = categories.FirstOrDefault(c => c.Name == "Longevity");
-            var mitochondrialDysfunction = categories.FirstOrDefault(c => c.Name == "Mitochondrial Dysfunction");
-            var chronicInflammation = categories.FirstOrDefault(c => c.Name == "Chronic Inflammation");
-            var physicalEnhancement = categories.FirstOrDefault(c => c.Name == "Physical Enhancement");
-            var strength = categories.FirstOrDefault(c => c.Name == "Strength");
-
-            // Assign categories to specific compounds
-            var categoryAssignments = new List<(string CompoundName, Category[] Categories)>
-            {
-                ("Caffeine", new[] { neuroenhancement, focus }.OfType<Category>().ToArray()),
-                ("L-Theanine", new[] { neuroenhancement, focus }.OfType<Category>().ToArray()),
-                ("Creatine", new[] { physicalEnhancement, strength }.OfType<Category>().ToArray()),
-                ("Magnesium", new[] { minerals }.OfType<Category>().ToArray()),
-                ("Vitamin D", new[] { vitamins }.OfType<Category>().ToArray()),
-                ("Omega-3", new[] { longevity, chronicInflammation }.OfType<Category>().ToArray()),
-                ("Vitamin B12", new[] { vitamins }.OfType<Category>().ToArray()),
-                ("Zinc", new[] { minerals }.OfType<Category>().ToArray()),
-                ("Iron", new[] { minerals }.OfType<Category>().ToArray()),
-                ("Melatonin", new[] { longevity }.OfType<Category>().ToArray()),
-                ("Ashwagandha", new[] { longevity, chronicInflammation }.OfType<Category>().ToArray()),
-                ("Rhodiola", new[] { neuroenhancement, longevity }.OfType<Category>().ToArray()),
-                ("Ginkgo Biloba", new[] { neuroenhancement, longevity }.OfType<Category>().ToArray()),
-                ("Turmeric", new[] { longevity, chronicInflammation }.OfType<Category>().ToArray()),
-                ("CoQ10", new[] { longevity, mitochondrialDysfunction }.OfType<Category>().ToArray()),
-                ("Alpha-GPC", new[] { neuroenhancement, focus }.OfType<Category>().ToArray()),
-                ("Lion's Mane", new[] { neuroenhancement, longevity }.OfType<Category>().ToArray()),
-                ("Bacopa Monnieri", new[] { neuroenhancement }.OfType<Category>().ToArray()),
-                ("Modafinil", new[] { neuroenhancement, focus }.OfType<Category>().ToArray()),
-                ("Phenylpiracetam", new[] { neuroenhancement, focus }.OfType<Category>().ToArray()),
-                ("NAD+", new[] { longevity, mitochondrialDysfunction }.OfType<Category>().ToArray()),
-                ("Resveratrol", new[] { longevity, chronicInflammation }.OfType<Category>().ToArray()),
-                ("Quercetin", new[] { longevity, chronicInflammation }.OfType<Category>().ToArray()),
-                ("Curcumin", new[] { longevity, chronicInflammation }.OfType<Category>().ToArray()),
-                ("PQQ", new[] { longevity, mitochondrialDysfunction }.OfType<Category>().ToArray()),
-                ("Nicotinamide Riboside", new[] { longevity, mitochondrialDysfunction }.OfType<Category>().ToArray()),
-                ("Spermidine", new[] { longevity }.OfType<Category>().ToArray()),
-                ("Fisetin", new[] { longevity, chronicInflammation }.OfType<Category>().ToArray()),
-                ("Pterostilbene", new[] { longevity }.OfType<Category>().ToArray()),
-                ("Sulforaphane", new[] { longevity, chronicInflammation }.OfType<Category>().ToArray())
-            };
-
-            // Apply category assignments
-            foreach (var (compoundName, assignedCategories) in categoryAssignments)
-            {
-                var compound = compounds.FirstOrDefault(c => c.Name == compoundName);
-                if (compound != null && assignedCategories.Any())
-                {
-                    compound.Categories.Clear();
-                    foreach (var category in assignedCategories)
-                    {
-                        compound.Categories.Add(category);
-                    }
-                }
-            }
-
-            context.SaveChanges();
+            // Call the async version synchronously to maintain consistency
+            SeedInterventionCategoriesAsync(context).GetAwaiter().GetResult();
         }
 
         private static List<Compound> GenerateNootropicCompounds()
