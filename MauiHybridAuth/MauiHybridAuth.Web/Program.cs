@@ -18,6 +18,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddScoped<ICompoundService, CompoundService>();
+builder.Services.AddScoped<IInterventionService, InterventionService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 // Add Auth services used by the Web app
