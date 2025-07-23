@@ -5,9 +5,10 @@
 @using MauiHybridAuth.Shared.Models
 @using MauiHybridAuth.Shared.Services
 @using MauiHybridAuth.Shared.Components.Categories
+@using System.Globalization
 @inject IInterventionService InterventionService
 
-<PageTitle>@GetCategoryPath() - Category</PageTitle>
+<PageTitle>@GetFormattedCategoryPath() - Category</PageTitle>
 
 <div class="container-fluid">
     <!-- Side by Side Layout: Category Component + Interventions Table -->
@@ -53,21 +54,38 @@
                             </li>
                             @if (!string.IsNullOrEmpty(Category1))
                             {
-                                <li class="breadcrumb-item">
-                                    <a href="/interventions/@Category1">@Category1</a>
-                                </li>
+                                @if (!string.IsNullOrEmpty(Category2))
+                                {
+                                    <!-- Category1 is a link when Category2 exists -->
+                                    <li class="breadcrumb-item">
+                                        <a href="/interventions/@Category1">@ToTitleCase(Category1)</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <!-- Category1 is current page when no Category2 -->
+                                    <li class="breadcrumb-item active" aria-current="page">@ToTitleCase(Category1)</li>
+                                }
                             }
                             @if (!string.IsNullOrEmpty(Category2))
                             {
-                                <li class="breadcrumb-item">
-                                    <a href="/interventions/@Category1/@Category2">@Category2</a>
-                                </li>
+                                @if (!string.IsNullOrEmpty(Category3))
+                                {
+                                    <!-- Category2 is a link when Category3 exists -->
+                                    <li class="breadcrumb-item">
+                                        <a href="/interventions/@Category1/@Category2">@ToTitleCase(Category2)</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <!-- Category2 is current page when no Category3 -->
+                                    <li class="breadcrumb-item active" aria-current="page">@ToTitleCase(Category2)</li>
+                                }
                             }
                             @if (!string.IsNullOrEmpty(Category3))
                             {
-                                <li class="breadcrumb-item">
-                                    <a href="/interventions/@Category1/@Category2/@Category3">@Category3</a>
-                                </li>
+                                <!-- Category3 is always current page -->
+                                <li class="breadcrumb-item active" aria-current="page">@ToTitleCase(Category3)</li>
                             }
                         </ol>
                     </nav>
@@ -86,7 +104,7 @@
                         <div class="alert alert-info text-center">
                             <i class="bi bi-info-circle-fill"></i>
                             <h4>No Interventions Found</h4>
-                            <p>No interventions found for <strong>@GetCategoryPath()</strong>.</p>
+                            <p>No interventions found for <strong>@GetFormattedCategoryPath()</strong>.</p>
                             <a href="/interventions" class="btn btn-primary btn-sm">
                                 <i class="bi bi-arrow-left"></i> View All Interventions
                             </a>
@@ -121,17 +139,17 @@
                                                         style="width: 24px; height: 24px; font-size: 10px; font-weight: bold;">
                                                         @intervention.Name.Substring(0, Math.Min(2,
                                                         intervention.Name.Length)).ToUpper()
-                                                    </div>
-                                                    <span class="small">@intervention.Name</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge @GetTypeBadgeClass(intervention) small">
-                                                    @GetInterventionTypeShortName(intervention)
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        index++;
+                                            </div>
+                                            <span class="small">@intervention.Name</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetTypeBadgeClass(intervention) small">
+                                            @GetInterventionTypeShortName(intervention)
+                                        </span>
+                                    </td>
+                                </tr>
+                                                                index++;
                                     }
                                 </tbody>
                             </table>
@@ -222,6 +240,13 @@
         return string.Join(" → ", parts);
     }
 
+    private string GetFormattedCategoryPath()
+    {
+        var parts = new[] { Category1, Category2, Category3 }.Where(c =>
+        !string.IsNullOrEmpty(c)).Select(ToTitleCase).ToArray();
+        return string.Join(" → ", parts);
+    }
+
     private string GetMostSpecificCategory()
     {
         if (!string.IsNullOrEmpty(Category3))
@@ -232,6 +257,14 @@
             return Category1;
         else
             return "Unknown";
+    }
+
+    private string ToTitleCase(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text.ToLower());
     }
 
     private string GetInterventionTypeShortName(Intervention intervention)
