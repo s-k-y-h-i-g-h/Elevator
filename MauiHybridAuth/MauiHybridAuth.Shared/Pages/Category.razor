@@ -64,7 +64,9 @@
                             }
                             @if (!string.IsNullOrEmpty(Category3))
                             {
-                                <li class="breadcrumb-item active" aria-current="page">@Category3</li>
+                                <li class="breadcrumb-item">
+                                    <a href="/interventions/@Category1/@Category2/@Category3">@Category3</a>
+                                </li>
                             }
                         </ol>
                     </nav>
