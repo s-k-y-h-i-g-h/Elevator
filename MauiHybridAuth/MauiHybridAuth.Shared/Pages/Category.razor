@@ -30,7 +30,8 @@
                             <div class="alert alert-info text-center">
                                 <i class="bi bi-info-circle-fill"></i>
                                 <h4>No Category Information Found</h4>
-                                <p>The @GetCategoryPath() category has no detailed information available.</p>
+                                <p>The <strong>@GetMostSpecificCategory()</strong> category has no detailed information
+                                    available.</p>
                             </div>
                         </div>
                     </div>
@@ -120,17 +121,17 @@
                                                         style="width: 24px; height: 24px; font-size: 10px; font-weight: bold;">
                                                         @intervention.Name.Substring(0, Math.Min(2,
                                                         intervention.Name.Length)).ToUpper()
-                                            </div>
-                                            <span class="small">@intervention.Name</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge @GetTypeBadgeClass(intervention) small">
-                                            @GetInterventionTypeShortName(intervention)
-                                        </span>
-                                    </td>
-                                </tr>
-                                                                index++;
+                                                    </div>
+                                                    <span class="small">@intervention.Name</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge @GetTypeBadgeClass(intervention) small">
+                                                    @GetInterventionTypeShortName(intervention)
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        index++;
                                     }
                                 </tbody>
                             </table>
@@ -167,10 +168,26 @@
 
     private void LoadCategoryComponent()
     {
-        if (!string.IsNullOrEmpty(Category1))
+        // Check for the most specific category first (category3), then category2, then category1
+        string targetCategory = null;
+
+        if (!string.IsNullOrEmpty(Category3))
+        {
+            targetCategory = Category3;
+        }
+        else if (!string.IsNullOrEmpty(Category2))
+        {
+            targetCategory = Category2;
+        }
+        else if (!string.IsNullOrEmpty(Category1))
+        {
+            targetCategory = Category1;
+        }
+
+        if (!string.IsNullOrEmpty(targetCategory))
         {
             // Try to find a component with the category name
-            var titleCaseCategory = char.ToUpper(Category1[0]) + Category1.Substring(1).ToLower();
+            var titleCaseCategory = char.ToUpper(targetCategory[0]) + targetCategory.Substring(1).ToLower();
             var componentName = $"MauiHybridAuth.Shared.Components.Categories.{titleCaseCategory}";
             categoryComponentType = Type.GetType(componentName);
         }
@@ -203,6 +220,18 @@
     {
         var parts = new[] { Category1, Category2, Category3 }.Where(c => !string.IsNullOrEmpty(c)).ToArray();
         return string.Join(" → ", parts);
+    }
+
+    private string GetMostSpecificCategory()
+    {
+        if (!string.IsNullOrEmpty(Category3))
+            return Category3;
+        else if (!string.IsNullOrEmpty(Category2))
+            return Category2;
+        else if (!string.IsNullOrEmpty(Category1))
+            return Category1;
+        else
+            return "Unknown";
     }
 
     private string GetInterventionTypeShortName(Intervention intervention)
