@@ -52,6 +52,36 @@ namespace MauiHybridAuth.Web.Migrations
                     b.ToTable("InterventionCategory");
                 });
 
+            modelBuilder.Entity("InterventionEffect", b =>
+                {
+                    b.Property<Guid>("EffectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("InterventionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("EffectId", "InterventionId");
+
+                    b.HasIndex("InterventionId");
+
+                    b.ToTable("InterventionEffect");
+                });
+
+            modelBuilder.Entity("InterventionMechanismOfAction", b =>
+                {
+                    b.Property<Guid>("InterventionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MechanismOfActionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("InterventionId", "MechanismOfActionId");
+
+                    b.HasIndex("MechanismOfActionId");
+
+                    b.ToTable("InterventionMechanismOfAction");
+                });
+
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
                 {
                     b.Property<Guid>("Id")
@@ -80,16 +110,11 @@ namespace MauiHybridAuth.Web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("InterventionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("InterventionId");
 
                     b.ToTable("Effects");
                 });
@@ -121,16 +146,11 @@ namespace MauiHybridAuth.Web.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("InterventionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Target")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("InterventionId");
 
                     b.ToTable("MechanismsOfAction");
                 });
@@ -427,6 +447,36 @@ namespace MauiHybridAuth.Web.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("InterventionEffect", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Effect", null)
+                        .WithMany()
+                        .HasForeignKey("EffectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MauiHybridAuth.Shared.Models.Intervention", null)
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InterventionMechanismOfAction", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Intervention", null)
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MauiHybridAuth.Shared.Models.MechanismOfAction", null)
+                        .WithMany()
+                        .HasForeignKey("MechanismOfActionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
                 {
                     b.HasOne("MauiHybridAuth.Shared.Models.Category", "Parent")
@@ -435,22 +485,6 @@ namespace MauiHybridAuth.Web.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("MauiHybridAuth.Shared.Models.Effect", b =>
-                {
-                    b.HasOne("MauiHybridAuth.Shared.Models.Intervention", null)
-                        .WithMany("Effects")
-                        .HasForeignKey("InterventionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("MauiHybridAuth.Shared.Models.MechanismOfAction", b =>
-                {
-                    b.HasOne("MauiHybridAuth.Shared.Models.Intervention", null)
-                        .WithMany("MechanismsOfAction")
-                        .HasForeignKey("InterventionId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -522,13 +556,6 @@ namespace MauiHybridAuth.Web.Migrations
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
                 {
                     b.Navigation("Subcategories");
-                });
-
-            modelBuilder.Entity("MauiHybridAuth.Shared.Models.Intervention", b =>
-                {
-                    b.Navigation("Effects");
-
-                    b.Navigation("MechanismsOfAction");
                 });
 #pragma warning restore 612, 618
         }

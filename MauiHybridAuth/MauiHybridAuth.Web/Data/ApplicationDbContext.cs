@@ -123,19 +123,41 @@ namespace MauiHybridAuth.Web.Data
                         .OnDelete(DeleteBehavior.Cascade)
                 );
 
-            // Configure one-to-many relationship between Interventions and MechanismsOfAction
-            modelBuilder.Entity<MechanismOfAction>()
-                .HasOne<Intervention>()
-                .WithMany(i => i.MechanismsOfAction)
-                .HasForeignKey("InterventionId")
-                .OnDelete(DeleteBehavior.Cascade);
+            // Configure many-to-many relationship between Interventions and MechanismsOfAction
+            modelBuilder.Entity<Intervention>()
+                .HasMany(i => i.MechanismsOfAction)
+                .WithMany(m => m.Interventions)
+                .UsingEntity<Dictionary<string, object>>(
+                    "InterventionMechanismOfAction",
+                    j => j
+                        .HasOne<MechanismOfAction>()
+                        .WithMany()
+                        .HasForeignKey("MechanismOfActionId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<Intervention>()
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                );
 
-            // Configure one-to-many relationship between Interventions and Effects
-            modelBuilder.Entity<Effect>()
-                .HasOne<Intervention>()
-                .WithMany(i => i.Effects)
-                .HasForeignKey("InterventionId")
-                .OnDelete(DeleteBehavior.Cascade);
+            // Configure many-to-many relationship between Interventions and Effects
+            modelBuilder.Entity<Intervention>()
+                .HasMany(i => i.Effects)
+                .WithMany(e => e.Interventions)
+                .UsingEntity<Dictionary<string, object>>(
+                    "InterventionEffect",
+                    j => j
+                        .HasOne<Effect>()
+                        .WithMany()
+                        .HasForeignKey("EffectId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j
+                        .HasOne<Intervention>()
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                );
         }
     }
 }
