@@ -10,6 +10,8 @@ namespace MauiHybridAuth.Web.Data
         public DbSet<Plant> Plants { get; set; }
         public DbSet<Formulation> Formulations { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<MechanismOfAction> MechanismsOfAction { get; set; }
+        public DbSet<Effect> Effects { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -120,6 +122,20 @@ namespace MauiHybridAuth.Web.Data
                         .HasForeignKey("InterventionId")
                         .OnDelete(DeleteBehavior.Cascade)
                 );
+
+            // Configure one-to-many relationship between Interventions and MechanismsOfAction
+            modelBuilder.Entity<MechanismOfAction>()
+                .HasOne<Intervention>()
+                .WithMany(i => i.MechanismsOfAction)
+                .HasForeignKey("InterventionId")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure one-to-many relationship between Interventions and Effects
+            modelBuilder.Entity<Effect>()
+                .HasOne<Intervention>()
+                .WithMany(i => i.Effects)
+                .HasForeignKey("InterventionId")
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
