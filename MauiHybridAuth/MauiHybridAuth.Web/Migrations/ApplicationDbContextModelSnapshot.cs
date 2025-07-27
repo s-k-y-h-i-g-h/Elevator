@@ -101,7 +101,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Effect", b =>
@@ -116,7 +116,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Effects");
+                    b.ToTable("Effect", (string)null);
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Intervention", b =>
@@ -152,7 +152,7 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MechanismsOfAction");
+                    b.ToTable("MechanismOfAction", (string)null);
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Web.Data.ApplicationUser", b =>

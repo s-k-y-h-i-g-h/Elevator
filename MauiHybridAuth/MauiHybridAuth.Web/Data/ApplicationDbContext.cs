@@ -99,11 +99,9 @@ namespace MauiHybridAuth.Web.Data
                 .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete to avoid cycles
 
             modelBuilder.Entity<Category>()
+                .ToTable("Category")
                 .HasIndex(c => c.Name)
                 .IsUnique(false); // Allow duplicate names at different levels
-
-            modelBuilder.Entity<Category>()
-                .ToTable("Categories");
 
             // Configure many-to-many relationship between Interventions and Categories
             modelBuilder.Entity<Intervention>()
@@ -158,6 +156,13 @@ namespace MauiHybridAuth.Web.Data
                         .HasForeignKey("InterventionId")
                         .OnDelete(DeleteBehavior.Cascade)
                 );
+
+            // Configure singular table names
+            modelBuilder.Entity<MechanismOfAction>()
+                .ToTable("MechanismOfAction");
+
+            modelBuilder.Entity<Effect>()
+                .ToTable("Effect");
         }
     }
 }
