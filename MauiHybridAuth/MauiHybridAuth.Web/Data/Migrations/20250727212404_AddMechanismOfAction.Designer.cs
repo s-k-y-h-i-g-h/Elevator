@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MauiHybridAuth.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250718172827_UpdatedCategoriesWithHallmarksOfAging")]
-    partial class UpdatedCategoriesWithHallmarksOfAging
+    [Migration("20250727212404_AddMechanismOfAction")]
+    partial class AddMechanismOfAction
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,66 @@ namespace MauiHybridAuth.Web.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("FormulationConstituent", b =>
+                {
+                    b.Property<Guid>("CompoundId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FormulationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("CompoundId", "FormulationId");
+
+                    b.HasIndex("FormulationId");
+
+                    b.ToTable("FormulationConstituent");
+                });
+
+            modelBuilder.Entity("InterventionCategory", b =>
+                {
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("InterventionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("CategoryId", "InterventionId");
+
+                    b.HasIndex("InterventionId");
+
+                    b.ToTable("InterventionCategory");
+                });
+
+            modelBuilder.Entity("InterventionEffect", b =>
+                {
+                    b.Property<Guid>("EffectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("InterventionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("EffectId", "InterventionId");
+
+                    b.HasIndex("InterventionId");
+
+                    b.ToTable("InterventionEffect");
+                });
+
+            modelBuilder.Entity("InterventionMechanismOfAction", b =>
+                {
+                    b.Property<Guid>("InterventionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MechanismOfActionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("InterventionId", "MechanismOfActionId");
+
+                    b.HasIndex("MechanismOfActionId");
+
+                    b.ToTable("InterventionMechanismOfAction");
+                });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
                 {
@@ -44,7 +104,22 @@ namespace MauiHybridAuth.Web.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Category", (string)null);
+                });
+
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.Effect", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Effect", (string)null);
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Intervention", b =>
@@ -62,6 +137,25 @@ namespace MauiHybridAuth.Web.Migrations
                     b.ToTable((string)null);
 
                     b.UseTpcMappingStrategy();
+                });
+
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.MechanismOfAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MechanismOfAction", (string)null);
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Web.Data.ApplicationUser", b =>
@@ -262,9 +356,28 @@ namespace MauiHybridAuth.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("PlantConstituent", b =>
+                {
+                    b.Property<Guid>("CompoundId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PlantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("CompoundId", "PlantId");
+
+                    b.HasIndex("PlantId");
+
+                    b.ToTable("PlantConstituent");
+                });
+
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Substance", b =>
                 {
                     b.HasBaseType("MauiHybridAuth.Shared.Models.Intervention");
+
+                    b.Property<string>("ClassificationTags")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DoseRange")
                         .IsRequired()
@@ -282,6 +395,89 @@ namespace MauiHybridAuth.Web.Migrations
                     b.HasBaseType("MauiHybridAuth.Shared.Models.Substance");
 
                     b.ToTable("Compounds");
+                });
+
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.Formulation", b =>
+                {
+                    b.HasBaseType("MauiHybridAuth.Shared.Models.Substance");
+
+                    b.Property<bool>("ExtendedRelease")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Liposomal")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Micronised")
+                        .HasColumnType("bit");
+
+                    b.ToTable("Formulations");
+                });
+
+            modelBuilder.Entity("MauiHybridAuth.Shared.Models.Plant", b =>
+                {
+                    b.HasBaseType("MauiHybridAuth.Shared.Models.Substance");
+
+                    b.ToTable("Plants");
+                });
+
+            modelBuilder.Entity("FormulationConstituent", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Compound", null)
+                        .WithMany()
+                        .HasForeignKey("CompoundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MauiHybridAuth.Shared.Models.Formulation", null)
+                        .WithMany()
+                        .HasForeignKey("FormulationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InterventionCategory", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MauiHybridAuth.Shared.Models.Intervention", null)
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InterventionEffect", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Effect", null)
+                        .WithMany()
+                        .HasForeignKey("EffectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MauiHybridAuth.Shared.Models.Intervention", null)
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InterventionMechanismOfAction", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Intervention", null)
+                        .WithMany()
+                        .HasForeignKey("InterventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MauiHybridAuth.Shared.Models.MechanismOfAction", null)
+                        .WithMany()
+                        .HasForeignKey("MechanismOfActionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MauiHybridAuth.Shared.Models.Category", b =>
@@ -341,6 +537,21 @@ namespace MauiHybridAuth.Web.Migrations
                     b.HasOne("MauiHybridAuth.Web.Data.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PlantConstituent", b =>
+                {
+                    b.HasOne("MauiHybridAuth.Shared.Models.Compound", null)
+                        .WithMany()
+                        .HasForeignKey("CompoundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MauiHybridAuth.Shared.Models.Plant", null)
+                        .WithMany()
+                        .HasForeignKey("PlantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -8,10 +8,13 @@ namespace MauiHybridAuth.Web.Data
         public static void SeedAll(ApplicationDbContext context)
         {
             SeedCategories(context);
+            SeedMechanismsOfAction(context);
+            SeedEffects(context);
             SeedCompounds(context);
             SeedPlants(context);
             SeedFormulations(context);
             SeedInterventionCategories(context);
+            SeedInterventionMechanismsAndEffects(context);
         }
 
         public static void SeedCategories(ApplicationDbContext context)
@@ -34,6 +37,34 @@ namespace MauiHybridAuth.Web.Data
             var compounds = GenerateNootropicCompounds();
             context.Compounds.AddRange(compounds);
             context.SaveChanges();
+        }
+
+        public static void SeedMechanismsOfAction(ApplicationDbContext context)
+        {
+            // Check if mechanisms of action already exist
+            if (context.MechanismsOfAction.Any())
+                return;
+
+            var mechanisms = GenerateMechanismsOfAction();
+            context.MechanismsOfAction.AddRange(mechanisms);
+            context.SaveChanges();
+        }
+
+        public static void SeedEffects(ApplicationDbContext context)
+        {
+            // Check if effects already exist
+            if (context.Effects.Any())
+                return;
+
+            var effects = GenerateEffects();
+            context.Effects.AddRange(effects);
+            context.SaveChanges();
+        }
+
+        public static void SeedInterventionMechanismsAndEffects(ApplicationDbContext context)
+        {
+            // Call the async version synchronously to maintain consistency
+            SeedInterventionMechanismsAndEffectsAsync(context).GetAwaiter().GetResult();
         }
 
         public static void SeedInterventionCategories(ApplicationDbContext context)
@@ -257,10 +288,13 @@ namespace MauiHybridAuth.Web.Data
         public static async Task SeedAllAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
         {
             await SeedCategoriesAsync(context, cancellationToken);
+            await SeedMechanismsOfActionAsync(context, cancellationToken);
+            await SeedEffectsAsync(context, cancellationToken);
             await SeedCompoundsAsync(context, cancellationToken);
             await SeedPlantsAsync(context, cancellationToken);
             await SeedFormulationsAsync(context, cancellationToken);
             await SeedInterventionCategoriesAsync(context, cancellationToken);
+            await SeedInterventionMechanismsAndEffectsAsync(context, cancellationToken);
         }
 
         public static async Task SeedCategoriesAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
@@ -271,6 +305,28 @@ namespace MauiHybridAuth.Web.Data
 
             var categories = GenerateTestCategories();
             context.Categories.AddRange(categories);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public static async Task SeedMechanismsOfActionAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            // Check if mechanisms of action already exist
+            if (await context.MechanismsOfAction.AnyAsync(cancellationToken))
+                return;
+
+            var mechanisms = GenerateMechanismsOfAction();
+            context.MechanismsOfAction.AddRange(mechanisms);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public static async Task SeedEffectsAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            // Check if effects already exist
+            if (await context.Effects.AnyAsync(cancellationToken))
+                return;
+
+            var effects = GenerateEffects();
+            context.Effects.AddRange(effects);
             await context.SaveChangesAsync(cancellationToken);
         }
 
@@ -530,6 +586,497 @@ namespace MauiHybridAuth.Web.Data
                         if (category != null)
                         {
                             formulation.Categories.Add(category);
+                        }
+                    }
+                }
+            }
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        public static async Task SeedInterventionMechanismsAndEffectsAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            // Process each intervention type separately to avoid MARS issues
+            await SeedCompoundMechanismsAndEffectsAsync(context, cancellationToken);
+            await SeedPlantMechanismsAndEffectsAsync(context, cancellationToken);
+            await SeedFormulationMechanismsAndEffectsAsync(context, cancellationToken);
+        }
+
+        private static List<MechanismOfAction> GenerateMechanismsOfAction()
+        {
+            var mechanisms = new List<MechanismOfAction>();
+
+            var mechanismData = new[]
+            {
+                // Neurotransmitter receptors
+                new { Target = "AMPA receptors", Action = "Positive allosteric modulator" },
+                new { Target = "NMDA receptors", Action = "Partial agonist" },
+                new { Target = "Nicotinic α7 receptors", Action = "Positive allosteric modulator" },
+                new { Target = "Muscarinic M1 receptors", Action = "Positive allosteric modulator" },
+                new { Target = "GABA-A receptors", Action = "Positive allosteric modulator" },
+                new { Target = "GABA-B receptors", Action = "Agonist" },
+                new { Target = "Dopamine D1 receptors", Action = "Agonist" },
+                new { Target = "Dopamine D2 receptors", Action = "Partial agonist" },
+                new { Target = "Serotonin 5-HT1A receptors", Action = "Partial agonist" },
+                new { Target = "Serotonin 5-HT2A receptors", Action = "Antagonist" },
+                new { Target = "Adenosine A1 receptors", Action = "Antagonist" },
+                new { Target = "Adenosine A2A receptors", Action = "Antagonist" },
+                
+                // Enzymes
+                new { Target = "Acetylcholinesterase", Action = "Inhibitor" },
+                new { Target = "Butyrylcholinesterase", Action = "Inhibitor" },
+                new { Target = "Monoamine oxidase A", Action = "Inhibitor" },
+                new { Target = "Monoamine oxidase B", Action = "Inhibitor" },
+                new { Target = "Catechol-O-methyltransferase", Action = "Inhibitor" },
+                new { Target = "Phosphodiesterase 4", Action = "Inhibitor" },
+                new { Target = "Phosphodiesterase 5", Action = "Inhibitor" },
+                new { Target = "Aromatase", Action = "Inhibitor" },
+                new { Target = "Cyclooxygenase-2", Action = "Inhibitor" },
+                new { Target = "Lipoxygenase", Action = "Inhibitor" },
+                
+                // Transporters
+                new { Target = "Dopamine transporter", Action = "Inhibitor" },
+                new { Target = "Norepinephrine transporter", Action = "Inhibitor" },
+                new { Target = "Serotonin transporter", Action = "Inhibitor" },
+                new { Target = "Choline transporter", Action = "Enhancer" },
+                new { Target = "Glucose transporter", Action = "Enhancer" },
+                
+                // Ion channels
+                new { Target = "Voltage-gated sodium channels", Action = "Blocker" },
+                new { Target = "Voltage-gated calcium channels L-type", Action = "Blocker" },
+                new { Target = "Voltage-gated potassium channels", Action = "Opener" },
+                new { Target = "TREK-1 potassium channels", Action = "Activator" },
+                
+                // Other targets
+                new { Target = "BDNF expression", Action = "Upregulator" },
+                new { Target = "NGF expression", Action = "Upregulator" },
+                new { Target = "CREB signaling", Action = "Activator" },
+                new { Target = "mTOR pathway", Action = "Modulator" },
+                new { Target = "AMPK pathway", Action = "Activator" },
+                new { Target = "Nrf2 pathway", Action = "Activator" },
+                new { Target = "NF-κB pathway", Action = "Inhibitor" },
+                new { Target = "PI3K/Akt pathway", Action = "Activator" },
+                new { Target = "Autophagy", Action = "Inducer" },
+                new { Target = "Mitochondrial biogenesis", Action = "Enhancer" },
+                new { Target = "Neurogenesis", Action = "Promoter" },
+                new { Target = "Angiogenesis", Action = "Promoter" },
+                new { Target = "Protein synthesis", Action = "Enhancer" },
+                new { Target = "DNA repair mechanisms", Action = "Enhancer" }
+            };
+
+            foreach (var data in mechanismData)
+            {
+                mechanisms.Add(new MechanismOfAction
+                {
+                    Target = data.Target,
+                    Action = data.Action
+                });
+            }
+
+            return mechanisms;
+        }
+
+        private static List<Effect> GenerateEffects()
+        {
+            var effects = new List<Effect>();
+
+            var effectNames = new[]
+            {
+                // Cognitive effects
+                "Enhanced memory consolidation",
+                "Improved working memory",
+                "Increased attention span",
+                "Better cognitive flexibility",
+                "Enhanced learning speed",
+                "Improved executive function",
+                "Increased processing speed",
+                "Better verbal fluency",
+                "Enhanced creativity",
+                "Improved pattern recognition",
+                "Better decision making",
+                "Enhanced mental clarity",
+                "Improved focus and concentration",
+                "Reduced cognitive fatigue",
+                "Enhanced logical reasoning",
+                
+                // Mood and emotional effects
+                "Reduced anxiety",
+                "Mood stabilization",
+                "Reduced stress response",
+                "Enhanced emotional regulation",
+                "Increased motivation",
+                "Improved self-confidence",
+                "Enhanced social cognition",
+                "Reduced irritability",
+                "Increased sense of well-being",
+                "Enhanced emotional resilience",
+                "Reduced rumination",
+                "Improved stress tolerance",
+                
+                // Physical and energy effects
+                "Increased alertness",
+                "Reduced fatigue",
+                "Enhanced wakefulness",
+                "Improved sleep quality",
+                "Increased energy levels",
+                "Enhanced physical endurance",
+                "Improved reaction time",
+                "Reduced inflammation",
+                "Enhanced immune function",
+                "Improved cardiovascular health",
+                "Better muscle recovery",
+                "Increased strength",
+                "Enhanced athletic performance",
+                
+                // Neuroprotective effects
+                "Neuroprotection against oxidative stress",
+                "Reduced neuroinflammation",
+                "Enhanced neuroplasticity",
+                "Improved brain blood flow",
+                "Increased BDNF levels",
+                "Enhanced synaptogenesis",
+                "Reduced neurotoxicity",
+                "Improved mitochondrial function",
+                "Enhanced cellular energy production",
+                "Reduced protein aggregation",
+                "Improved DNA repair",
+                "Enhanced autophagy",
+                
+                // Metabolic effects
+                "Improved glucose metabolism",
+                "Enhanced fat oxidation",
+                "Increased metabolic rate",
+                "Better insulin sensitivity",
+                "Improved nutrient uptake",
+                "Enhanced protein synthesis",
+                "Reduced oxidative damage",
+                "Improved cellular respiration",
+                
+                // Sensory and perceptual effects
+                "Enhanced visual acuity",
+                "Improved auditory processing",
+                "Better sensory discrimination",
+                "Enhanced proprioception",
+                "Improved hand-eye coordination",
+                
+                // Sleep and circadian effects
+                "Improved sleep onset",
+                "Enhanced deep sleep",
+                "Better REM sleep quality",
+                "Circadian rhythm regulation",
+                "Reduced sleep fragmentation",
+                
+                // Social and behavioral effects
+                "Enhanced empathy",
+                "Improved communication skills",
+                "Reduced social anxiety",
+                "Enhanced leadership qualities",
+                "Better conflict resolution",
+                "Increased assertiveness"
+            };
+
+            foreach (var effectName in effectNames)
+            {
+                effects.Add(new Effect
+                {
+                    Name = effectName
+                });
+            }
+
+            return effects;
+        }
+
+        private static async Task SeedCompoundMechanismsAndEffectsAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            var compounds = await context.Compounds.ToListAsync(cancellationToken);
+            var mechanisms = await context.MechanismsOfAction.ToListAsync(cancellationToken);
+            var effects = await context.Effects.ToListAsync(cancellationToken);
+
+            if (!compounds.Any() || !mechanisms.Any() || !effects.Any())
+                return;
+
+            var mechanismLookup = mechanisms.ToLookup(m => $"{m.Target}|{m.Action}", m => m);
+            var effectLookup = effects.ToLookup(e => e.Name, e => e);
+
+            var GetMechanism = (string target, string action) => mechanismLookup[$"{target}|{action}"].FirstOrDefault();
+            var GetEffect = (string name) => effectLookup[name].FirstOrDefault();
+
+            // Comprehensive mechanism and effect assignments for compounds
+            var compoundAssignments = new List<(string Name, (string Target, string Action)[] Mechanisms, string[] Effects)>
+            {
+                // Racetams
+                ("Piracetam", new[] { 
+                    ("AMPA receptors", "Positive allosteric modulator"),
+                    ("NMDA receptors", "Partial agonist"),
+                    ("Choline transporter", "Enhancer")
+                }, new[] { 
+                    "Enhanced memory consolidation", "Improved working memory", "Increased attention span", 
+                    "Enhanced learning speed", "Improved cognitive flexibility", "Enhanced mental clarity" 
+                }),
+                
+                ("Aniracetam", new[] { 
+                    ("AMPA receptors", "Positive allosteric modulator"),
+                    ("Nicotinic α7 receptors", "Positive allosteric modulator"),
+                    ("Serotonin 5-HT2A receptors", "Antagonist")
+                }, new[] { 
+                    "Enhanced memory consolidation", "Enhanced creativity", "Reduced anxiety", 
+                    "Mood stabilization", "Improved cognitive flexibility", "Better verbal fluency" 
+                }),
+                
+                ("Oxiracetam", new[] { 
+                    ("AMPA receptors", "Positive allosteric modulator"),
+                    ("Choline transporter", "Enhancer"),
+                    ("Phosphodiesterase 4", "Inhibitor")
+                }, new[] { 
+                    "Enhanced memory consolidation", "Improved focus and concentration", "Enhanced logical reasoning",
+                    "Increased processing speed", "Better decision making", "Enhanced mental clarity" 
+                }),
+                
+                ("Modafinil", new[] { 
+                    ("Dopamine transporter", "Inhibitor"),
+                    ("Norepinephrine transporter", "Inhibitor"),
+                    ("Adenosine A2A receptors", "Antagonist")
+                }, new[] { 
+                    "Enhanced wakefulness", "Increased alertness", "Improved focus and concentration",
+                    "Reduced fatigue", "Enhanced cognitive performance", "Increased motivation" 
+                }),
+                
+                ("Alpha-GPC", new[] { 
+                    ("Choline transporter", "Enhancer"),
+                    ("Acetylcholine synthesis", "Enhancer"),
+                    ("BDNF expression", "Upregulator")
+                }, new[] { 
+                    "Enhanced memory consolidation", "Improved working memory", "Enhanced learning speed",
+                    "Neuroprotection against oxidative stress", "Enhanced neuroplasticity", "Increased BDNF levels" 
+                }),
+                
+                ("Caffeine", new[] { 
+                    ("Adenosine A1 receptors", "Antagonist"),
+                    ("Adenosine A2A receptors", "Antagonist"),
+                    ("Phosphodiesterase 4", "Inhibitor")
+                }, new[] { 
+                    "Increased alertness", "Enhanced wakefulness", "Improved focus and concentration",
+                    "Reduced fatigue", "Increased energy levels", "Enhanced physical endurance" 
+                }),
+                
+                ("L-Theanine", new[] { 
+                    ("GABA-A receptors", "Positive allosteric modulator"),
+                    ("Glutamate receptors", "Antagonist"),
+                    ("Serotonin 5-HT1A receptors", "Partial agonist")
+                }, new[] { 
+                    "Reduced anxiety", "Enhanced relaxation", "Improved focus and concentration",
+                    "Better stress tolerance", "Enhanced alpha brain waves", "Mood stabilization" 
+                }),
+                
+                ("Phenibut", new[] { 
+                    ("GABA-B receptors", "Agonist"),
+                    ("Voltage-gated calcium channels L-type", "Blocker"),
+                    ("Dopamine D2 receptors", "Partial agonist")
+                }, new[] { 
+                    "Reduced anxiety", "Reduced social anxiety", "Enhanced relaxation", "Improved sleep quality",
+                    "Mood stabilization", "Increased self-confidence", "Enhanced social cognition" 
+                }),
+                
+                ("Lion's Mane Mushroom", new[] { 
+                    ("NGF expression", "Upregulator"),
+                    ("BDNF expression", "Upregulator"),
+                    ("Neurogenesis", "Promoter")
+                }, new[] { 
+                    "Enhanced neuroplasticity", "Improved cognitive function", "Neuroprotection against oxidative stress",
+                    "Enhanced memory consolidation", "Increased BDNF levels", "Enhanced synaptogenesis" 
+                }),
+                
+                ("Ashwagandha", new[] { 
+                    ("Cortisol receptors", "Modulator"),
+                    ("GABA-A receptors", "Positive allosteric modulator"),
+                    ("Nrf2 pathway", "Activator")
+                }, new[] { 
+                    "Reduced stress response", "Reduced anxiety", "Enhanced stress tolerance",
+                    "Improved sleep quality", "Enhanced physical endurance", "Reduced inflammation" 
+                })
+            };
+
+            // Apply mechanism and effect assignments to compounds
+            foreach (var (name, mechanismData, effectData) in compoundAssignments)
+            {
+                var compound = compounds.FirstOrDefault(c => c.Name == name);
+                if (compound != null)
+                {
+                    // Clear existing relationships
+                    compound.MechanismsOfAction.Clear();
+                    compound.Effects.Clear();
+                    
+                    // Add mechanisms
+                    foreach (var (target, action) in mechanismData)
+                    {
+                        var mechanism = GetMechanism(target, action);
+                        if (mechanism != null)
+                        {
+                            compound.MechanismsOfAction.Add(mechanism);
+                        }
+                    }
+                    
+                    // Add effects
+                    foreach (var effectName in effectData)
+                    {
+                        var effect = GetEffect(effectName);
+                        if (effect != null)
+                        {
+                            compound.Effects.Add(effect);
+                        }
+                    }
+                }
+            }
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        private static async Task SeedPlantMechanismsAndEffectsAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            var plants = await context.Plants.ToListAsync(cancellationToken);
+            var mechanisms = await context.MechanismsOfAction.ToListAsync(cancellationToken);
+            var effects = await context.Effects.ToListAsync(cancellationToken);
+
+            if (!plants.Any() || !mechanisms.Any() || !effects.Any())
+                return;
+
+            var mechanismLookup = mechanisms.ToLookup(m => $"{m.Target}|{m.Action}", m => m);
+            var effectLookup = effects.ToLookup(e => e.Name, e => e);
+
+            var GetMechanism = (string target, string action) => mechanismLookup[$"{target}|{action}"].FirstOrDefault();
+            var GetEffect = (string name) => effectLookup[name].FirstOrDefault();
+
+            var plantAssignments = new List<(string Name, (string Target, string Action)[] Mechanisms, string[] Effects)>
+            {
+                ("Ginkgo Biloba", new[] { 
+                    ("Phosphodiesterase 5", "Inhibitor"),
+                    ("Monoamine oxidase A", "Inhibitor"),
+                    ("Improved brain blood flow", "Enhancer")
+                }, new[] { 
+                    "Improved brain blood flow", "Enhanced memory consolidation", "Improved cognitive function",
+                    "Neuroprotection against oxidative stress", "Enhanced mental clarity", "Improved focus and concentration" 
+                }),
+                
+                ("Bacopa Monnieri", new[] { 
+                    ("Acetylcholinesterase", "Inhibitor"),
+                    ("BDNF expression", "Upregulator"),
+                    ("Nrf2 pathway", "Activator")
+                }, new[] { 
+                    "Enhanced memory consolidation", "Improved working memory", "Reduced anxiety",
+                    "Enhanced learning speed", "Neuroprotection against oxidative stress", "Enhanced neuroplasticity" 
+                }),
+                
+                ("Rhodiola Rosea", new[] { 
+                    ("Monoamine oxidase A", "Inhibitor"),
+                    ("Monoamine oxidase B", "Inhibitor"),
+                    ("Cortisol receptors", "Modulator")
+                }, new[] { 
+                    "Reduced stress response", "Enhanced stress tolerance", "Reduced fatigue",
+                    "Improved mood", "Enhanced physical endurance", "Increased energy levels" 
+                }),
+                
+                ("Green Tea", new[] { 
+                    ("Catechol-O-methyltransferase", "Inhibitor"),
+                    ("Adenosine A2A receptors", "Antagonist"),
+                    ("Nrf2 pathway", "Activator")
+                }, new[] { 
+                    "Increased alertness", "Enhanced focus and concentration", "Neuroprotection against oxidative stress",
+                    "Reduced inflammation", "Enhanced immune function", "Improved cardiovascular health" 
+                })
+            };
+
+            // Apply assignments
+            foreach (var (name, mechanismData, effectData) in plantAssignments)
+            {
+                var plant = plants.FirstOrDefault(p => p.Name == name);
+                if (plant != null)
+                {
+                    plant.MechanismsOfAction.Clear();
+                    plant.Effects.Clear();
+                    
+                    foreach (var (target, action) in mechanismData)
+                    {
+                        var mechanism = GetMechanism(target, action);
+                        if (mechanism != null)
+                        {
+                            plant.MechanismsOfAction.Add(mechanism);
+                        }
+                    }
+                    
+                    foreach (var effectName in effectData)
+                    {
+                        var effect = GetEffect(effectName);
+                        if (effect != null)
+                        {
+                            plant.Effects.Add(effect);
+                        }
+                    }
+                }
+            }
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        private static async Task SeedFormulationMechanismsAndEffectsAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            var formulations = await context.Formulations.ToListAsync(cancellationToken);
+            var mechanisms = await context.MechanismsOfAction.ToListAsync(cancellationToken);
+            var effects = await context.Effects.ToListAsync(cancellationToken);
+
+            if (!formulations.Any() || !mechanisms.Any() || !effects.Any())
+                return;
+
+            var mechanismLookup = mechanisms.ToLookup(m => $"{m.Target}|{m.Action}", m => m);
+            var effectLookup = effects.ToLookup(e => e.Name, e => e);
+
+            var GetMechanism = (string target, string action) => mechanismLookup[$"{target}|{action}"].FirstOrDefault();
+            var GetEffect = (string name) => effectLookup[name].FirstOrDefault();
+
+            var formulationAssignments = new List<(string Name, (string Target, string Action)[] Mechanisms, string[] Effects)>
+            {
+                ("Nootropic Stack Alpha", new[] { 
+                    ("AMPA receptors", "Positive allosteric modulator"),
+                    ("Choline transporter", "Enhancer"),
+                    ("Adenosine A2A receptors", "Antagonist")
+                }, new[] { 
+                    "Enhanced memory consolidation", "Improved focus and concentration", "Increased alertness",
+                    "Enhanced cognitive flexibility", "Better decision making", "Enhanced mental clarity" 
+                }),
+                
+                ("Cognitive Enhancement Complex", new[] { 
+                    ("AMPA receptors", "Positive allosteric modulator"),
+                    ("BDNF expression", "Upregulator"),
+                    ("Nrf2 pathway", "Activator")
+                }, new[] { 
+                    "Enhanced memory consolidation", "Improved executive function", "Enhanced neuroplasticity",
+                    "Neuroprotection against oxidative stress", "Enhanced learning speed", "Improved cognitive flexibility" 
+                })
+            };
+
+            // Apply assignments
+            foreach (var (name, mechanismData, effectData) in formulationAssignments)
+            {
+                var formulation = formulations.FirstOrDefault(f => f.Name == name);
+                if (formulation != null)
+                {
+                    formulation.MechanismsOfAction.Clear();
+                    formulation.Effects.Clear();
+                    
+                    foreach (var (target, action) in mechanismData)
+                    {
+                        var mechanism = GetMechanism(target, action);
+                        if (mechanism != null)
+                        {
+                            formulation.MechanismsOfAction.Add(mechanism);
+                        }
+                    }
+                    
+                    foreach (var effectName in effectData)
+                    {
+                        var effect = GetEffect(effectName);
+                        if (effect != null)
+                        {
+                            formulation.Effects.Add(effect);
                         }
                     }
                 }
