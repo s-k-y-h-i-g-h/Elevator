@@ -35,7 +35,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString)
+    options.UseSqlServer(connectionString, sqlOptions => 
+        sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
         .UseSeeding((context, _) =>
         {
             DatabaseSeeder.SeedAll((ApplicationDbContext)context);

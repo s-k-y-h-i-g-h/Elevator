@@ -313,211 +313,224 @@ namespace MauiHybridAuth.Web.Data
             if (await context.Set<Dictionary<string, object>>("InterventionCategory").AnyAsync(cancellationToken))
                 return;
 
+            // Process each intervention type separately to avoid MARS issues
+            await SeedCompoundCategoriesAsync(context, cancellationToken);
+            await SeedPlantCategoriesAsync(context, cancellationToken);
+            await SeedFormulationCategoriesAsync(context, cancellationToken);
+        }
+
+        private static async Task SeedCompoundCategoriesAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
             var compounds = await context.Compounds.ToListAsync(cancellationToken);
-            var plants = await context.Plants.ToListAsync(cancellationToken);
-            var formulations = await context.Formulations.ToListAsync(cancellationToken);
             var categories = await context.Categories.ToListAsync(cancellationToken);
 
-            if (!categories.Any())
+            if (!compounds.Any() || !categories.Any())
                 return;
 
             // Find specific categories for assignment
-            var essential = categories.FirstOrDefault(c => c.Name == "Essential");
-            var neuroenhancement = categories.FirstOrDefault(c => c.Name == "Neuroenhancement");
-            var focus = categories.FirstOrDefault(c => c.Name == "Focus");
-            var memory = categories.FirstOrDefault(c => c.Name == "Memory");
-            var concentration = categories.FirstOrDefault(c => c.Name == "Concentration");
-            var creativity = categories.FirstOrDefault(c => c.Name == "Creativity");
-            var neuroprotection = categories.FirstOrDefault(c => c.Name == "Neuroprotection");
-            var executiveFunction = categories.FirstOrDefault(c => c.Name == "Executive Function");
-            var processingSpeed = categories.FirstOrDefault(c => c.Name == "Processing Speed");
-            var reasoning = categories.FirstOrDefault(c => c.Name == "Reasoning");
-            var mood = categories.FirstOrDefault(c => c.Name == "Mood");
-            var motivation = categories.FirstOrDefault(c => c.Name == "Motivation");
-            var stressResistance = categories.FirstOrDefault(c => c.Name == "Stress Resistance");
-            var cognitiveFlexibility = categories.FirstOrDefault(c => c.Name == "Cognitive Flexibility");
-            var confidence = categories.FirstOrDefault(c => c.Name == "Confidence");
-            var social = categories.FirstOrDefault(c => c.Name == "Social");
-            var happiness = categories.FirstOrDefault(c => c.Name == "Happiness");
-            var perception = categories.FirstOrDefault(c => c.Name == "Perception");
-            var language = categories.FirstOrDefault(c => c.Name == "Language");
-            var motor = categories.FirstOrDefault(c => c.Name == "Motor");
-            
-            var longevity = categories.FirstOrDefault(c => c.Name == "Longevity");
-            var mitochondrialDysfunction = categories.FirstOrDefault(c => c.Name == "Mitochondrial Dysfunction");
-            var chronicInflammation = categories.FirstOrDefault(c => c.Name == "Chronic Inflammation");
-            var cellularSenescence = categories.FirstOrDefault(c => c.Name == "Cellular Senescence");
-            
-            var physicalEnhancement = categories.FirstOrDefault(c => c.Name == "Physical Enhancement");
-            var strength = categories.FirstOrDefault(c => c.Name == "Strength");
-            var endurance = categories.FirstOrDefault(c => c.Name == "Endurance");
-            var recovery = categories.FirstOrDefault(c => c.Name == "Recovery");
-            var performance = categories.FirstOrDefault(c => c.Name == "Performance");
-            var muscleGain = categories.FirstOrDefault(c => c.Name == "Muscle Gain");
-            
-            var sleep = categories.FirstOrDefault(c => c.Name == "Sleep");
-            var anxiety = categories.FirstOrDefault(c => c.Name == "Anxiety");
-            var depression = categories.FirstOrDefault(c => c.Name == "Depression");
-            var stress = categories.FirstOrDefault(c => c.Name == "Stress");
+            var categoryLookup = categories.ToLookup(c => c.Name, c => c);
+
+            // Get category references
+            var GetCategory = (string name) => categoryLookup[name].FirstOrDefault();
 
             // Comprehensive category assignments for compounds
-            var compoundAssignments = new List<(string Name, Category[] Categories)>
+            var compoundAssignments = new List<(string Name, string[] CategoryNames)>
             {
                 // Racetams - primarily memory and learning enhancers
-                ("Piracetam", new[] { neuroenhancement, memory, focus, neuroprotection }.OfType<Category>().ToArray()),
-                ("Aniracetam", new[] { neuroenhancement, memory, creativity, mood, anxiety }.OfType<Category>().ToArray()),
-                ("Oxiracetam", new[] { neuroenhancement, memory, focus, concentration, reasoning }.OfType<Category>().ToArray()),
-                ("Pramiracetam", new[] { neuroenhancement, memory, focus, concentration }.OfType<Category>().ToArray()),
-                ("Phenylpiracetam", new[] { neuroenhancement, memory, focus, motivation, physicalEnhancement }.OfType<Category>().ToArray()),
-                ("Nefiracetam", new[] { neuroenhancement, memory, neuroprotection, depression }.OfType<Category>().ToArray()),
-                ("Coluracetam", new[] { neuroenhancement, memory, perception, depression }.OfType<Category>().ToArray()),
+                ("Piracetam", new[] { "Neuroenhancement", "Memory", "Focus", "Neuroprotection" }),
+                ("Aniracetam", new[] { "Neuroenhancement", "Memory", "Creativity", "Mood", "Anxiety" }),
+                ("Oxiracetam", new[] { "Neuroenhancement", "Memory", "Focus", "Concentration", "Reasoning" }),
+                ("Pramiracetam", new[] { "Neuroenhancement", "Memory", "Focus", "Concentration" }),
+                ("Phenylpiracetam", new[] { "Neuroenhancement", "Memory", "Focus", "Motivation", "Physical Enhancement" }),
+                ("Nefiracetam", new[] { "Neuroenhancement", "Memory", "Neuroprotection", "Depression" }),
+                ("Coluracetam", new[] { "Neuroenhancement", "Memory", "Perception", "Depression" }),
                 
                 // Ampakines - cognitive enhancers
-                ("Sunifiram", new[] { neuroenhancement, memory, focus }.OfType<Category>().ToArray()),
-                ("Unifiram", new[] { neuroenhancement, memory, focus }.OfType<Category>().ToArray()),
+                ("Sunifiram", new[] { "Neuroenhancement", "Memory", "Focus" }),
+                ("Unifiram", new[] { "Neuroenhancement", "Memory", "Focus" }),
                 
                 // Noopept and related peptides
-                ("Noopept", new[] { neuroenhancement, memory, focus, neuroprotection }.OfType<Category>().ToArray()),
-                ("PRL-8-53", new[] { neuroenhancement, memory }.OfType<Category>().ToArray()),
-                ("NSI-189", new[] { neuroenhancement, depression, mood, neuroprotection }.OfType<Category>().ToArray()),
+                ("Noopept", new[] { "Neuroenhancement", "Memory", "Focus", "Neuroprotection" }),
+                ("PRL-8-53", new[] { "Neuroenhancement", "Memory" }),
+                ("NSI-189", new[] { "Neuroenhancement", "Depression", "Mood", "Neuroprotection" }),
                 
                 // Eugeroics - wakefulness promoters
-                ("Modafinil", new[] { neuroenhancement, focus, motivation, concentration }.OfType<Category>().ToArray()),
-                ("Armodafinil", new[] { neuroenhancement, focus, motivation, concentration }.OfType<Category>().ToArray()),
-                ("Adrafinil", new[] { neuroenhancement, focus, motivation }.OfType<Category>().ToArray()),
-                ("Fluorenol", new[] { neuroenhancement, focus }.OfType<Category>().ToArray()),
+                ("Modafinil", new[] { "Neuroenhancement", "Focus", "Motivation", "Concentration" }),
+                ("Armodafinil", new[] { "Neuroenhancement", "Focus", "Motivation", "Concentration" }),
+                ("Adrafinil", new[] { "Neuroenhancement", "Focus", "Motivation" }),
+                ("Fluorenol", new[] { "Neuroenhancement", "Focus" }),
                 
                 // Cholinergics - acetylcholine system enhancers
-                ("Alpha-GPC", new[] { neuroenhancement, memory, focus, neuroprotection }.OfType<Category>().ToArray()),
-                ("CDP-Choline", new[] { neuroenhancement, memory, focus, neuroprotection }.OfType<Category>().ToArray()),
-                ("Centrophenoxine", new[] { neuroenhancement, memory, neuroprotection, longevity }.OfType<Category>().ToArray()),
-                ("Choline Bitartrate", new[] { neuroenhancement, memory }.OfType<Category>().ToArray()),
-                ("Huperzine A", new[] { neuroenhancement, memory, neuroprotection }.OfType<Category>().ToArray()),
-                ("Citicoline", new[] { neuroenhancement, memory, focus, neuroprotection }.OfType<Category>().ToArray()),
+                ("Alpha-GPC", new[] { "Neuroenhancement", "Memory", "Focus", "Neuroprotection" }),
+                ("CDP-Choline", new[] { "Neuroenhancement", "Memory", "Focus", "Neuroprotection" }),
+                ("Centrophenoxine", new[] { "Neuroenhancement", "Memory", "Neuroprotection" }),
+                ("Choline Bitartrate", new[] { "Neuroenhancement", "Memory" }),
+                ("Huperzine A", new[] { "Neuroenhancement", "Memory", "Neuroprotection" }),
+                ("Citicoline", new[] { "Neuroenhancement", "Memory", "Focus", "Neuroprotection" }),
                 
                 // Stimulants
-                ("Caffeine", new[] { neuroenhancement, focus, concentration, motivation }.OfType<Category>().ToArray()),
-                ("L-Theanine", new[] { neuroenhancement, focus, stressResistance, anxiety }.OfType<Category>().ToArray()),
-                ("Theacrine", new[] { neuroenhancement, focus, motivation, mood }.OfType<Category>().ToArray()),
-                ("Dynamine", new[] { neuroenhancement, focus, motivation }.OfType<Category>().ToArray()),
+                ("Caffeine", new[] { "Neuroenhancement", "Focus", "Concentration", "Motivation" }),
+                ("L-Theanine", new[] { "Neuroenhancement", "Focus", "Stress Resistance", "Anxiety" }),
+                ("Theacrine", new[] { "Neuroenhancement", "Focus", "Motivation", "Mood" }),
+                ("Dynamine", new[] { "Neuroenhancement", "Focus", "Motivation" }),
                 
                 // Dopaminergics
-                ("L-DOPA", new[] { neuroenhancement, motivation, mood, motor }.OfType<Category>().ToArray()),
-                ("L-Tyrosine", new[] { neuroenhancement, focus, motivation, stressResistance }.OfType<Category>().ToArray()),
-                ("N-Acetyl L-Tyrosine", new[] { neuroenhancement, focus, motivation, stressResistance }.OfType<Category>().ToArray()),
-                ("Phenylethylamine", new[] { neuroenhancement, mood, motivation }.OfType<Category>().ToArray()),
+                ("L-DOPA", new[] { "Neuroenhancement", "Motivation", "Mood", "Motor" }),
+                ("L-Tyrosine", new[] { "Neuroenhancement", "Focus", "Motivation", "Stress Resistance" }),
+                ("N-Acetyl L-Tyrosine", new[] { "Neuroenhancement", "Focus", "Motivation", "Stress Resistance" }),
+                ("Phenylethylamine", new[] { "Neuroenhancement", "Mood", "Motivation" }),
                 
                 // GABAergics
-                ("Phenibut", new[] { neuroenhancement, anxiety, social, confidence, mood }.OfType<Category>().ToArray()),
-                ("Picamilon", new[] { neuroenhancement, anxiety, focus, mood }.OfType<Category>().ToArray()),
-                ("Taurine", new[] { neuroenhancement, anxiety, neuroprotection }.OfType<Category>().ToArray()),
+                ("Phenibut", new[] { "Neuroenhancement", "Anxiety", "Social", "Confidence", "Mood" }),
+                ("Picamilon", new[] { "Neuroenhancement", "Anxiety", "Focus", "Mood" }),
+                ("Taurine", new[] { "Neuroenhancement", "Anxiety", "Neuroprotection" }),
                 
                 // Serotonergics
-                ("5-HTP", new[] { neuroenhancement, mood, happiness, sleep }.OfType<Category>().ToArray()),
-                ("L-Tryptophan", new[] { neuroenhancement, mood, happiness, sleep }.OfType<Category>().ToArray()),
+                ("5-HTP", new[] { "Neuroenhancement", "Mood", "Happiness", "Sleep" }),
+                ("L-Tryptophan", new[] { "Neuroenhancement", "Mood", "Happiness", "Sleep" }),
                 
                 // Metabolics and mitochondrial enhancers
-                ("Creatine", new[] { physicalEnhancement, strength, muscleGain, performance }.OfType<Category>().ToArray()),
-                ("PQQ", new[] { neuroenhancement, neuroprotection, longevity, mitochondrialDysfunction }.OfType<Category>().ToArray()),
-                ("Nicotinamide Riboside", new[] { neuroenhancement, longevity, mitochondrialDysfunction }.OfType<Category>().ToArray()),
-                ("Acetyl-L-Carnitine", new[] { neuroenhancement, memory, neuroprotection, mitochondrialDysfunction }.OfType<Category>().ToArray()),
+                ("Creatine", new[] { "Physical Enhancement", "Strength", "Muscle Gain", "Performance" }),
+                ("PQQ", new[] { "Neuroenhancement", "Neuroprotection", "Longevity" }),
+                ("Nicotinamide Riboside", new[] { "Neuroenhancement", "Longevity" }),
+                ("Acetyl-L-Carnitine", new[] { "Neuroenhancement", "Memory", "Neuroprotection", "Longevity" }),
                 
                 // Essential nutrients
-                ("Vitamin D", new[] { essential, mood, neuroprotection }.OfType<Category>().ToArray()),
-                ("Vitamin B12", new[] { essential, neuroenhancement, memory }.OfType<Category>().ToArray()),
-                ("Magnesium", new[] { essential, anxiety, sleep, neuroprotection }.OfType<Category>().ToArray()),
-                ("Zinc", new[] { essential, neuroenhancement, neuroprotection }.OfType<Category>().ToArray()),
-                ("Iron", new[] { essential, neuroenhancement }.OfType<Category>().ToArray()),
+                ("Vitamin D", new[] { "Essential", "Mood", "Neuroprotection" }),
+                ("Vitamin B12", new[] { "Essential", "Neuroenhancement", "Memory" }),
+                ("Magnesium", new[] { "Essential", "Anxiety", "Sleep", "Neuroprotection" }),
+                ("Zinc", new[] { "Essential", "Neuroenhancement", "Neuroprotection" }),
+                ("Iron", new[] { "Essential", "Neuroenhancement" }),
                 
                 // Others
-                ("Vinpocetine", new[] { neuroenhancement, memory, neuroprotection }.OfType<Category>().ToArray()),
-                ("Sulbutiamine", new[] { neuroenhancement, memory, motivation, mood }.OfType<Category>().ToArray()),
-                ("Idebenone", new[] { neuroenhancement, neuroprotection, longevity }.OfType<Category>().ToArray()),
-                ("Phosphatidylserine", new[] { neuroenhancement, memory, neuroprotection }.OfType<Category>().ToArray()),
+                ("Vinpocetine", new[] { "Neuroenhancement", "Memory", "Neuroprotection" }),
+                ("Sulbutiamine", new[] { "Neuroenhancement", "Memory", "Motivation", "Mood" }),
+                ("Idebenone", new[] { "Neuroenhancement", "Neuroprotection", "Longevity" }),
+                ("Phosphatidylserine", new[] { "Neuroenhancement", "Memory", "Neuroprotection" }),
                 
                 // Longevity compounds with nootropic effects
-                ("Resveratrol", new[] { longevity, neuroprotection, chronicInflammation }.OfType<Category>().ToArray()),
-                ("Quercetin", new[] { longevity, neuroprotection, chronicInflammation }.OfType<Category>().ToArray()),
-                ("Curcumin", new[] { longevity, neuroprotection, chronicInflammation, mood }.OfType<Category>().ToArray()),
-                ("Omega-3", new[] { essential, neuroenhancement, neuroprotection, mood }.OfType<Category>().ToArray()),
-                ("Melatonin", new[] { sleep, neuroprotection, longevity }.OfType<Category>().ToArray()),
-                ("CoQ10", new[] { longevity, mitochondrialDysfunction, neuroprotection }.OfType<Category>().ToArray())
-            };
-
-            // Category assignments for plants
-            var plantAssignments = new List<(string Name, Category[] Categories)>
-            {
-                ("Ginkgo Biloba", new[] { neuroenhancement, memory, focus, neuroprotection }.OfType<Category>().ToArray()),
-                ("Bacopa Monnieri", new[] { neuroenhancement, memory, anxiety, neuroprotection }.OfType<Category>().ToArray()),
-                ("Lion's Mane Mushroom", new[] { neuroenhancement, memory, neuroprotection, longevity }.OfType<Category>().ToArray()),
-                ("Rhodiola Rosea", new[] { neuroenhancement, stressResistance, mood, motivation, physicalEnhancement }.OfType<Category>().ToArray()),
-                ("Ashwagandha", new[] { neuroenhancement, stressResistance, anxiety, mood, physicalEnhancement }.OfType<Category>().ToArray()),
-                ("Panax Ginseng", new[] { neuroenhancement, memory, motivation, physicalEnhancement, neuroprotection }.OfType<Category>().ToArray()),
-                ("Centella Asiatica", new[] { neuroenhancement, memory, neuroprotection, longevity }.OfType<Category>().ToArray()),
-                ("Mucuna Pruriens", new[] { neuroenhancement, mood, motivation, motor }.OfType<Category>().ToArray()),
-                ("Green Tea", new[] { neuroenhancement, focus, neuroprotection, longevity }.OfType<Category>().ToArray()),
-                ("Curcuma Longa", new[] { longevity, chronicInflammation, neuroprotection }.OfType<Category>().ToArray()),
-                ("Yerba Mate", new[] { neuroenhancement, focus, motivation }.OfType<Category>().ToArray()),
-                ("Kanna", new[] { neuroenhancement, mood, social, anxiety }.OfType<Category>().ToArray()),
-                ("Camellia Sinensis", new[] { neuroenhancement, focus, neuroprotection }.OfType<Category>().ToArray()),
-                ("Polygala Tenuifolia", new[] { neuroenhancement, memory, mood }.OfType<Category>().ToArray()),
-                ("Schisandra Chinensis", new[] { neuroenhancement, neuroprotection, stressResistance, longevity }.OfType<Category>().ToArray()),
-                ("Eleutherococcus Senticosus", new[] { neuroenhancement, stressResistance, physicalEnhancement }.OfType<Category>().ToArray()),
-                ("Convolvulus Pluricaulis", new[] { neuroenhancement, memory, neuroprotection }.OfType<Category>().ToArray()),
-                ("Mandukaparni", new[] { neuroenhancement, memory, neuroprotection }.OfType<Category>().ToArray())
-            };
-
-            // Category assignments for formulations
-            var formulationAssignments = new List<(string Name, Category[] Categories)>
-            {
-                ("Nootropic Stack Alpha", new[] { neuroenhancement, focus, memory, concentration }.OfType<Category>().ToArray()),
-                ("Cognitive Enhancement Complex", new[] { neuroenhancement, memory, focus, executiveFunction, neuroprotection }.OfType<Category>().ToArray()),
-                ("Brain Boost Formula", new[] { neuroenhancement, focus, memory, motivation }.OfType<Category>().ToArray()),
-                ("Focus & Memory Blend", new[] { neuroenhancement, focus, memory, concentration }.OfType<Category>().ToArray()),
-                ("Racetam Complex", new[] { neuroenhancement, memory, focus, neuroprotection }.OfType<Category>().ToArray()),
-                ("Choline Matrix", new[] { neuroenhancement, memory, neuroprotection }.OfType<Category>().ToArray()),
-                ("Adaptogen Cognitive Blend", new[] { neuroenhancement, stressResistance, neuroprotection, longevity }.OfType<Category>().ToArray()),
-                ("Liposomal Curcumin Complex", new[] { longevity, chronicInflammation, neuroprotection }.OfType<Category>().ToArray())
+                ("Resveratrol", new[] { "Longevity" }),
+                ("Quercetin", new[] { "Longevity" }),
+                ("Curcumin", new[] { "Longevity" }),
+                ("Omega-3", new[] { "Essential", "Neuroenhancement", "Neuroprotection", "Mood" }),
+                ("Melatonin", new[] { "Sleep", "Neuroprotection", "Longevity" }),
+                ("CoQ10", new[] { "Longevity" })
             };
 
             // Apply category assignments to compounds
-            foreach (var (name, assignedCategories) in compoundAssignments)
+            foreach (var (name, categoryNames) in compoundAssignments)
             {
                 var compound = compounds.FirstOrDefault(c => c.Name == name);
-                if (compound != null && assignedCategories.Any())
+                if (compound != null)
                 {
                     compound.Categories.Clear();
-                    foreach (var category in assignedCategories)
+                    foreach (var categoryName in categoryNames)
                     {
-                        compound.Categories.Add(category);
+                        var category = GetCategory(categoryName);
+                        if (category != null)
+                        {
+                            compound.Categories.Add(category);
+                        }
                     }
                 }
             }
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        private static async Task SeedPlantCategoriesAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            var plants = await context.Plants.ToListAsync(cancellationToken);
+            var categories = await context.Categories.ToListAsync(cancellationToken);
+
+            if (!plants.Any() || !categories.Any())
+                return;
+
+            var categoryLookup = categories.ToLookup(c => c.Name, c => c);
+            var GetCategory = (string name) => categoryLookup[name].FirstOrDefault();
+
+            // Category assignments for plants
+            var plantAssignments = new List<(string Name, string[] CategoryNames)>
+            {
+                ("Ginkgo Biloba", new[] { "Neuroenhancement", "Memory", "Focus", "Neuroprotection" }),
+                ("Bacopa Monnieri", new[] { "Neuroenhancement", "Memory", "Anxiety", "Neuroprotection" }),
+                ("Lion's Mane Mushroom", new[] { "Neuroenhancement", "Memory", "Neuroprotection", "Longevity" }),
+                ("Rhodiola Rosea", new[] { "Neuroenhancement", "Stress Resistance", "Mood", "Motivation", "Physical Enhancement" }),
+                ("Ashwagandha", new[] { "Neuroenhancement", "Stress Resistance", "Anxiety", "Mood", "Physical Enhancement" }),
+                ("Panax Ginseng", new[] { "Neuroenhancement", "Memory", "Motivation", "Physical Enhancement", "Neuroprotection" }),
+                ("Centella Asiatica", new[] { "Neuroenhancement", "Memory", "Neuroprotection", "Longevity" }),
+                ("Mucuna Pruriens", new[] { "Neuroenhancement", "Mood", "Motivation", "Motor" }),
+                ("Green Tea", new[] { "Neuroenhancement", "Focus", "Neuroprotection", "Longevity" }),
+                ("Curcuma Longa", new[] { "Longevity", "Neuroprotection" }),
+                ("Yerba Mate", new[] { "Neuroenhancement", "Focus", "Motivation" }),
+                ("Kanna", new[] { "Neuroenhancement", "Mood", "Social", "Anxiety" }),
+                ("Camellia Sinensis", new[] { "Neuroenhancement", "Focus", "Neuroprotection" }),
+                ("Polygala Tenuifolia", new[] { "Neuroenhancement", "Memory", "Mood" }),
+                ("Schisandra Chinensis", new[] { "Neuroenhancement", "Neuroprotection", "Stress Resistance", "Longevity" }),
+                ("Eleutherococcus Senticosus", new[] { "Neuroenhancement", "Stress Resistance", "Physical Enhancement" }),
+                ("Convolvulus Pluricaulis", new[] { "Neuroenhancement", "Memory", "Neuroprotection" }),
+                ("Mandukaparni", new[] { "Neuroenhancement", "Memory", "Neuroprotection" })
+            };
 
             // Apply category assignments to plants
-            foreach (var (name, assignedCategories) in plantAssignments)
+            foreach (var (name, categoryNames) in plantAssignments)
             {
                 var plant = plants.FirstOrDefault(p => p.Name == name);
-                if (plant != null && assignedCategories.Any())
+                if (plant != null)
                 {
                     plant.Categories.Clear();
-                    foreach (var category in assignedCategories)
+                    foreach (var categoryName in categoryNames)
                     {
-                        plant.Categories.Add(category);
+                        var category = GetCategory(categoryName);
+                        if (category != null)
+                        {
+                            plant.Categories.Add(category);
+                        }
                     }
                 }
             }
 
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        private static async Task SeedFormulationCategoriesAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+        {
+            var formulations = await context.Formulations.ToListAsync(cancellationToken);
+            var categories = await context.Categories.ToListAsync(cancellationToken);
+
+            if (!formulations.Any() || !categories.Any())
+                return;
+
+            var categoryLookup = categories.ToLookup(c => c.Name, c => c);
+            var GetCategory = (string name) => categoryLookup[name].FirstOrDefault();
+
+            // Category assignments for formulations
+            var formulationAssignments = new List<(string Name, string[] CategoryNames)>
+            {
+                ("Nootropic Stack Alpha", new[] { "Neuroenhancement", "Focus", "Memory", "Concentration" }),
+                ("Cognitive Enhancement Complex", new[] { "Neuroenhancement", "Memory", "Focus", "Executive Function", "Neuroprotection" }),
+                ("Brain Boost Formula", new[] { "Neuroenhancement", "Focus", "Memory", "Motivation" }),
+                ("Focus & Memory Blend", new[] { "Neuroenhancement", "Focus", "Memory", "Concentration" }),
+                ("Racetam Complex", new[] { "Neuroenhancement", "Memory", "Focus", "Neuroprotection" }),
+                ("Choline Matrix", new[] { "Neuroenhancement", "Memory", "Neuroprotection" }),
+                ("Adaptogen Cognitive Blend", new[] { "Neuroenhancement", "Stress Resistance", "Neuroprotection", "Longevity" }),
+                ("Liposomal Curcumin Complex", new[] { "Longevity" })
+            };
+
             // Apply category assignments to formulations
-            foreach (var (name, assignedCategories) in formulationAssignments)
+            foreach (var (name, categoryNames) in formulationAssignments)
             {
                 var formulation = formulations.FirstOrDefault(f => f.Name == name);
-                if (formulation != null && assignedCategories.Any())
+                if (formulation != null)
                 {
                     formulation.Categories.Clear();
-                    foreach (var category in assignedCategories)
+                    foreach (var categoryName in categoryNames)
                     {
-                        formulation.Categories.Add(category);
+                        var category = GetCategory(categoryName);
+                        if (category != null)
+                        {
+                            formulation.Categories.Add(category);
+                        }
                     }
                 }
             }
@@ -557,23 +570,6 @@ namespace MauiHybridAuth.Web.Data
             var diagnosticHealth = new Category { Name = "Diagnostic", Parent = health };
 
             categories.AddRange(new[] { essential, hair, greyHairPrevention, hairLossPrevention, skin, sex, dental, sleep, slowWaveSleep, rapidEyeMovement, latency, duration, joint, digestion, bone, diagnosticHealth });
-
-            var genomicInstability = new Category { Name = "Genomic Instability", Parent = longevity };
-            var telomereAttrition = new Category { Name = "Telomere Attrition", Parent = longevity };
-            var epigeneticAlterations = new Category { Name = "Epigenetic Alterations", Parent = longevity };
-            var lossOfProteostasis = new Category { Name = "Loss of Proteostasis", Parent = longevity };
-            var disabledMacroautophagy = new Category { Name = "Disabled Macroautophagy", Parent = longevity };
-            var deregulatedNutrientSensing = new Category { Name = "Deregulated Nutrient-Sensing", Parent = longevity };
-            var mitochondrialDysfunction = new Category { Name = "Mitochondrial Dysfunction", Parent = longevity };
-            var cellularSenescence = new Category { Name = "Cellular Senescence", Parent = longevity };
-            var stemCellExhaustion = new Category { Name = "Stem Cell Exhaustion", Parent = longevity };
-            var alteredIntercellularCommunication = new Category { Name = "Altered Intercellular Communication", Parent = longevity };
-            var chronicInflammation = new Category { Name = "Chronic Inflammation", Parent = longevity };
-            var dysbiosis = new Category { Name = "Dysbiosis", Parent = longevity };
-
-            categories.AddRange(new[] { genomicInstability, telomereAttrition, epigeneticAlterations, lossOfProteostasis, disabledMacroautophagy, 
-                                      deregulatedNutrientSensing, mitochondrialDysfunction, cellularSenescence, 
-                                      stemCellExhaustion, alteredIntercellularCommunication, chronicInflammation, dysbiosis });
 
             // Neuroenhancement subcategories
             var focus = new Category { Name = "Focus", Parent = neuroenhancement };

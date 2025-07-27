@@ -11,6 +11,15 @@ namespace MauiHybridAuth.Web.Data
         public DbSet<Formulation> Formulations { get; set; }
         public DbSet<Category> Categories { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            
+            // Suppress the MARS savepoint warning since we handle transactions properly in our seeding
+            optionsBuilder.ConfigureWarnings(warnings => 
+                warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.SqlServerEventId.SavepointsDisabledBecauseOfMARS));
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -33,9 +42,9 @@ namespace MauiHybridAuth.Web.Data
                 )
                 .Metadata.SetValueComparer(
                     new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<ClassificationTag>>(
-                        (c1, c2) => c1.SequenceEqual(c2),
-                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                        c => c.ToList()
+                        (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+                        c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c == null ? new List<ClassificationTag>() : c.ToList()
                     )
                 );
 
