@@ -39,12 +39,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
         .UseSeeding((context, _) =>
         {
-            DatabaseSeeder.SeedAll((ApplicationDbContext)context);
+            // Synchronous seeding for migrations
+            DatabaseSeeder.SeedAllSync((ApplicationDbContext)context);
         })
         .UseAsyncSeeding(async (context, _, cancellationToken) =>
         {
+            // Async seeding for application startup and admin interface
             await DatabaseSeeder.SeedAllAsync((ApplicationDbContext)context, cancellationToken);
         }));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 //Needed for external clients to log in
@@ -62,13 +65,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    // Apply migrations & create database if needed at startup
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Database.Migrate();
-    }
-    app.UseMigrationsEndPoint();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
