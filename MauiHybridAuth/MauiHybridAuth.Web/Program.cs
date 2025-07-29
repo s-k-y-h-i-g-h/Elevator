@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Anthropic.SDK;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -20,6 +23,21 @@ builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddScoped<ICompoundService, CompoundService>();
 builder.Services.AddScoped<IInterventionService, InterventionService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+// Add Claude AI service
+builder.Services.AddSingleton<AnthropicClient>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var apiKey = configuration["Claude:ApiKey"] ?? Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY");
+    
+    if (string.IsNullOrEmpty(apiKey))
+    {
+        throw new InvalidOperationException("Claude API key not found. Please set 'Claude:ApiKey' in configuration or 'ANTHROPIC_API_KEY' environment variable.");
+    }
+    
+    return new AnthropicClient(apiKey);
+});
+builder.Services.AddScoped<ClaudeService>();
 
 // Add Auth services used by the Web app
 builder.Services.AddAuthentication(options =>

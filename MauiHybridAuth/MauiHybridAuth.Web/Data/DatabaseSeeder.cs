@@ -12,12 +12,19 @@ namespace MauiHybridAuth.Web.Data
 
         public static async Task SeedAllAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
         {
-            // Check if categories already exist
-            if (await context.Categories.AnyAsync(cancellationToken))
-                return;
+            List<Category>? categories = null;
 
-            context.Categories.AddRange(GenerateCategories());
-            await context.SaveChangesAsync(cancellationToken);
+            // Check if categories already exist
+            if (!await context.Categories.AnyAsync(cancellationToken))
+            {
+                categories = GenerateCategories();
+                context.Categories.AddRange(categories);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+            else
+            {
+                categories = await context.Categories.ToListAsync(cancellationToken);
+            }
         }
 
         private static List<Category> GenerateCategories()
