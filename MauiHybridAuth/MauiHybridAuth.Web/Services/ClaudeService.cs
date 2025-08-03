@@ -20,7 +20,7 @@ namespace MauiHybridAuth.Web.Services
             _configuration = configuration;
         }
 
-        public async Task<ClaudeResponse> QueryAsync(string prompt, CancellationToken cancellationToken = default)
+        public async Task<MessageResponse> QueryAsync(string prompt, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -37,21 +37,7 @@ namespace MauiHybridAuth.Web.Services
                     Temperature = 0.7m
                 };
 
-                var response = await _client.Messages.GetClaudeMessageAsync(parameters);
-
-                var claudeResponse = new ClaudeResponse
-                {
-                    Content = response.Message.ToString(),
-                    InputTokens = response.Usage?.InputTokens ?? 0,
-                    OutputTokens = response.Usage?.OutputTokens ?? 0,
-                    Model = response.Model ?? "claude-3-5-sonnet-20241022",
-                    Timestamp = DateTime.UtcNow
-                };
-
-                _logger.LogInformation("Received response from Claude. Input tokens: {InputTokens}, Output tokens: {OutputTokens}", 
-                    claudeResponse.InputTokens, claudeResponse.OutputTokens);
-
-                return claudeResponse;
+                return await _client.Messages.GetClaudeMessageAsync(parameters);
             }
             catch (Exception ex)
             {
@@ -87,7 +73,7 @@ namespace MauiHybridAuth.Web.Services
             }
         }
 
-        public async Task<ClaudeResponse> QueryWithContextAsync(IEnumerable<ClaudeMessage> messages, CancellationToken cancellationToken = default)
+        public async Task<MessageResponse> QueryWithContextAsync(IEnumerable<ClaudeMessage> messages, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -106,21 +92,7 @@ namespace MauiHybridAuth.Web.Services
                     Temperature = 0.7m
                 };
 
-                var response = await _client.Messages.GetClaudeMessageAsync(parameters);
-
-                var claudeResponse = new ClaudeResponse
-                {
-                    Content = response.Message.ToString(),
-                    InputTokens = response.Usage?.InputTokens ?? 0,
-                    OutputTokens = response.Usage?.OutputTokens ?? 0,
-                    Model = response.Model ?? "claude-3-5-sonnet-20241022",
-                    Timestamp = DateTime.UtcNow
-                };
-
-                _logger.LogInformation("Received contextual response from Claude. Input tokens: {InputTokens}, Output tokens: {OutputTokens}", 
-                    claudeResponse.InputTokens, claudeResponse.OutputTokens);
-
-                return claudeResponse;
+                return await _client.Messages.GetClaudeMessageAsync(parameters);
             }
             catch (Exception ex)
             {
